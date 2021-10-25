@@ -1,0 +1,191 @@
+# Title: 2D (x-z) granular rollwave simulation
+# Author: Boyuan Yu
+# Command: gerris2D -m column.gfs
+# Desciption: trying to reproduce Baker & Gray's granular rollwave simulation, but with inlet-outlet BC
+
+# Grain size
+Define D 0.03575
+
+# New regularization method
+Define ALPHACOEFF 1.9
+Define MUINF 0.05
+Define I1N 0.0039718
+Define I2N 0.28017
+
+# Simulation without normalization for now.
+# Density for air and water not needed (using Lagree et al's normalization)
+Define RHOF 0.001
+Define RHO(T) (1.0 * T + RHOF*(1.0 - T))
+Define DIST(time,period,epsi) (1.0+epsi*sin(2.0*M_PI*time/period))
+Define DISTPERIOD 20.742
+
+
+# Viscosity of light phase (air)
+Define MUF 0.0001
+
+# Domain extent
+# Slightly extend the domain
+Define LDOMAIN 32.0
+
+# Maximum refinement
+Define LEVEL 9
+
+# Channel slope
+Define CHANNELSLOPE 0.54296
+
+# Mu(I) rheology params
+Define MUS 0.342
+Define MUD 0.557
+Define INODE 0.069
+Define PHIPARAM 1.0
+
+Define BAGNOLDVEL(gravity,gs,alpha,ndepth,ycoord) ((2.0)*(3.0)*sqrt(gravity*gs*PHIPARAM)*sqrt(sin(alpha)*pow((ndepth/gs), 3.0))*(1.0-pow((1.0-ycoord/ndepth), 3.0/2.0)))
+
+# Regularization
+Define AMINUS (I1N*exp((ALPHACOEFF*pow((INODE+I1N),2.0))/pow((MUS*INODE+MUD*I1N+MUINF*pow(I1N,2.0)),2.0)))
+
+# Normal Flow
+# Characteristic spatial scale
+Define NORMALDEPTH 1.00
+
+Define GRAVCOEFF 1.00
+
+1 0 GfsSimulation GfsBox GfsGEdge {
+    # shift origin of the domain
+    x = 0.5 y = 0.5
+} {
+    PhysicalParams {
+     L = LDOMAIN
+     g = GRAVCOEFF
+     }
+
+    Time { end = 25.5 dtmax = 1e-2 }
+
+    AdvectionParams { cfl = 0.6 }
+
+    # We need to tune the solver
+    # ApproxProjectionParams { tolerance = 1e-4 }
+    # ProjectionParams { tolerance = 1e-4 }
+
+    # VOF tracer and interface positions
+    VariableTracerVOF T
+    VariablePosition X T x
+    VariablePosition Y T y
+
+    # mu(I) granular rheology
+    # with regularization for now, no truncation
+    SourceViscosity {} {
+	    double Eta = MUF;
+	    if (P > 0. && D2 > 0.) {
+        double In = sqrt(2.)*D*D2/sqrt(P / 1.0);
+        double muI = 0.0;
+        if (In>I1N){
+          muI = (MUS*INODE+MUD*In+MUINF*pow(In,2.0))/(INODE+In);
+        }
+        else {
+          muI = sqrt(ALPHACOEFF/log(AMINUS/In));
+        }
+        double Etamin = sqrt(pow(D,3.0));
+        Eta = MAX((muI*P)/(sqrt(2.)*D2), Etamin);
+	}
+	// Classic trick: use harmonic mean for the dynamic viscosity
+	return 1./(T/Eta + (1. - T)/MUF);
+    } {
+	beta = 1
+	tolerance = 1e-4
+    }
+
+    # Track a "band" around the interface to resolve surface gradients
+    # properly
+    AdaptGradient { istep = 1 } {
+	  cmax = 0
+	  maxlevel = LEVEL
+    } T
+
+    # Use non-constant resolution inside the granular material
+    # to save computational cost
+    # swith to T for constant resolution inside the granular material (T > 0 && T < 1) T
+    AdaptFunction { istep = 1 } {
+	  cmax = 0
+	  maxlevel = LEVEL
+    } T
+
+    # density
+    PhysicalParams { alpha = 1./RHO(T) }
+
+    # gravity
+    Source V ((-1.0)*GRAVCOEFF)*(cos(CHANNELSLOPE))
+    Source U GRAVCOEFF*sin(CHANNELSLOPE)
+
+    # initial conditions
+    # dry bed for simplicity
+    # Refine (y<NORMALDEPTH ? LEVEL : 3)
+    InitFraction T ({
+      double top = (0.0+NORMALDEPTH)-y;
+      double right = (0.0+1.0*LDOMAIN)-x;
+      return union (right, top);
+      })
+
+    OutputTime { istep = 20 } log-LEVEL
+    # OutputProjectionStats { istep = 20 } log-LEVEL
+    # OutputDiffusionStats { istep = 20 } log-LEVEL
+    OutputProgress { istep = 20 } log-LEVEL
+
+    # EventSum { istep = 1 } U SU
+    # EventSum { istep = 1 } V SV
+
+    # remove ejected droplets (just in case)
+    RemoveDroplets { istep = 1 } T -1
+
+    # stop when the acceleration of any cell full of granular material
+    # is less than 1e-2/0.1
+    # Init { istep = 1 } { UT = U*(T == 1.) }
+    # EventStop { start = 0.1 step = 0.1 } UT 1e-2 DU
+    # OutputScalarNorm { istep = 10 } du-LEVEL { v = DU }
+
+    # Init {} {
+	  #   P = {
+	  #     double p = (y+LDOMAIN/2.0) > 0. ? 1.0*GRAVCOEFF*y : 0.0;
+	  #     return MAX (0., p);
+	  #   }
+    # }
+
+    # generate profiles
+    OutputSimulation { step = 0.10 } snapshotTecplot-%g.plt {
+        format = Tecplot
+    }
+
+    OutputSimulation { step = 0.10 } snapshot-%g.gfs
+
+    # interface positions
+    # OutputScalarNorm { istep = 10 } X-H0-LEVEL { v = (T > 0.1 ? X : G_MAXDOUBLE) }
+    # OutputScalarNorm { istep = 10 } Y-H0-LEVEL { v = (T > 0.1 ? Y : G_MAXDOUBLE) }
+    # position of the "center" of the column
+    # OutputScalarNorm { istep = 10 } Yc-H0-LEVEL { v = (x < 0.1 ? Y : G_MAXDOUBLE) }
+}
+GfsBox {
+    top = Boundary {
+	# shift the reference pressure by the hydrostatic pressure of
+	# the light phase, i.e. P = 0 at the bottom boundary in the
+	# light phase. I am not sure whether this makes a real
+	# difference.
+	BcDirichlet P -RHOF*LDOMAIN
+  # BcDirichlet P 0.0
+	BcNeumann V 0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+    # left: inlet
+    left = Boundary {
+    # try the no-slip BC for checking
+    # BcDirichlet U 0
+    BcDirichlet T { return y < NORMALDEPTH ? 1. : 0.; }
+    BcDirichlet U { return y < NORMALDEPTH ? (DIST(t,DISTPERIOD,0.15)*BAGNOLDVEL(GRAVCOEFF,D,CHANNELSLOPE,NORMALDEPTH,y)) : 0.; }
+    BcDirichlet V 0
+    BcDirichlet P { return y < NORMALDEPTH ? (1.0*PHIPARAM*GRAVCOEFF*NORMALDEPTH*(1.0-(y)/(NORMALDEPTH))*cos(CHANNELSLOPE)) : 0.; }
+    }
+    # right: outflow
+    right = BoundaryOutflow
+}
