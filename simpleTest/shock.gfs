@@ -1,0 +1,84 @@
+# Title: Shock reflection by a circular cylinder
+#
+# Description:
+#
+# The evolution of an initial "step" wave is modelled using the
+# Saint-Venant equations. The wave interacts with a circular cylinder
+# described using embedded solid boundaries. Adaptivity is used to
+# track the wave fronts. This example is discussed in \cite{an2012}.
+#
+# \begin{figure}[htbp]
+# \caption{(a) Animation of the evolution of water depth. (b) Adaptive mesh at $t=0.3$.}
+# \begin{center}
+# \begin{tabular}{cc}
+# \htmladdnormallinkfoot{\includegraphics[width=0.45\hsize]{depth.eps}}{depth.mpg} &
+# \includegraphics[width=0.45\hsize]{mesh.eps} \\
+# (a) & (b)
+# \end{tabular}
+# \end{center}
+# \end{figure}
+#
+# Author: Hyunuk An, Soonyoung Yu and St\'ephane Popinet
+# Command: gerris2D shock.gfs | gfsview2D depth.gfv
+# Version: 120320
+# Required files: depth.gfv mesh.gfv
+# Running time: 2 minutes
+# Generated files: depth.mpg depth.eps mesh.eps
+1 0 GfsRiver GfsBox GfsGEdge {} {
+    Time { end = 5.0 }
+
+    PhysicalParams { L = 5 g = 9.81 }
+
+    # We use a sphere knowing that in 2D the resulting object will be
+    # a cross-section of the sphere at z = 0 i.e. a cylinder of radius
+    # 0.5
+    Solid (sphere(-0.5,0.,0.,0.5))
+
+    Init {} {
+	# Initial shock
+	P = 3.505271526
+	U = 28.049341608
+    }
+
+    Refine 9
+    # AdaptGradient { istep = 1 } {
+    #    cmax = 0.1
+    #    cfactor = 2
+    #    maxlevel = 9
+    # } P
+
+    OutputTime { istep = 10 } stderr
+    # OutputSimulation { istep = 10 } stdout
+    OutputSimulation { step = 0.10 } snapshot-%g.gfs
+    OutputSimulation { step = 0.10 } snapshotTecplot-%g.plt {
+        format = Tecplot
+    }
+    OutputSimulation { step = 0.10 } snapshotText-%g.txt {
+        format = text
+    }
+    
+    OutputSolidForce { istart = 1 istep = 1 } f
+    
+}
+GfsBox {
+    left = Boundary {
+	BcDirichlet P 3.505271526
+	BcDirichlet U 28.049341608
+	BcDirichlet V 0
+    }
+    top = Boundary { 
+    BcNeumann V 0
+    BcNeumann U 0
+    BcNeumann P 0
+    }
+    bottom = Boundary { 
+    BcNeumann V 0
+    BcNeumann U 0
+    BcNeumann P 0
+    }
+    right = Boundary { 
+    BcNeumann V 0
+    BcNeumann U 0
+    BcNeumann P 0
+    }
+}
