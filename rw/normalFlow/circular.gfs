@@ -1,0 +1,95 @@
+# Title: The square and circular cylinder impacted by the normal flow
+#
+# Description:
+#
+
+# below this depth the flow is considered "dry"
+Define DRY 1e-5
+Define GRAVITYCOEFF 9.81
+Define CHANNELSLOPE 0.05011
+Define NORMALDEPTH 0.00798
+Define NORMALVELOCITY 1.038
+Define CF (2.0*GRAVITYCOEFF*CHANNELSLOPE*NORMALDEPTH/pow(NORMALVELOCITY,2.0))
+
+1 0 GfsRiver GfsBox GfsGEdge {
+    x = 0.5 y = 0.5 
+} {
+
+    Time { end = 16 }
+
+    PhysicalParams { L = 5.0 g = 9.81 }
+
+    # We use a sphere knowing that in 2D the resulting object will be
+    # a cross-section of the sphere at z = 0 i.e. a cylinder of radius
+    # 0.5
+    # Solid (cube(3.30,3.,0.,0.6))
+    Solid (sphere(2.50,2.50,0.0,0.3))
+    RefineSolid 9
+
+    Init {} {
+        # Initial normal flow
+	    P = 0.00798
+	    U = 0.00828324
+    }
+
+    Init { istep = 1 } {
+	# Initial normal flow
+	# P = 0.00798
+	# U = 0.00828324
+
+    # implicit quadratic bottom friction with coefficient based on normal flow
+	U = (P > DRY ? (U + GRAVITYCOEFF * CHANNELSLOPE * P * dt)/(1. + dt*0.50*CF*Velocity/P) : 0.)
+	V = (P > DRY ? V/(1. + dt*0.50*CF*Velocity/P) : 0.)
+    P = (P > DRY ? P : 0.)
+    }
+
+    # AdvectionParams { 
+    #     gradient = gfs_center_sweby_gradient
+    #     # cfl = 0.5
+    #     }
+
+    Refine 5
+    Refine ((y>1.5)&&(y<3.5)&&(x>1.0)&&(x<4.0) ? 9 : 5)
+     # AdaptGradient { istep = 1 } {
+     #    cmax = 8e-5
+     #    cfactor = 2
+     #    maxlevel = 10
+     # } P
+      
+      #(P < DRY ? 0. : P + Zb)
+
+    OutputTime { istep = 10 } stderr
+    # OutputSimulation { istep = 10 } stdout
+    OutputSimulation { step = 0.5 } snapshot-%g.gfs
+    OutputSimulation { step = 0.5 } snapshotTecplot-%g.plt {
+        format = Tecplot
+    }
+    OutputSimulation { step = 0.5 } snapshotText-%g.txt {
+        format = text
+    }
+    
+    OutputSolidForce { istart = 1 istep = 1 } f
+    
+}
+GfsBox {
+left = Boundary {
+    BcDirichlet P 0.00798
+    BcDirichlet U 0.00828324
+    BcDirichlet V 0.0
+}
+right = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+top = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+bottom = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}

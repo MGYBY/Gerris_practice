@@ -1,0 +1,133 @@
+# Title: The square and circular cylinder impacted by the normal flow
+#
+# Description:
+#
+
+# below this depth the flow is considered "dry"
+Define DRY 1e-5
+Define GRAVITYCOEFF 9.81
+Define CHANNELSLOPE 0.05011
+Define NORMALDEPTH 0.00798
+Define NORMALVELOCITY 1.038
+Define CF (2.0*GRAVITYCOEFF*CHANNELSLOPE*NORMALDEPTH/pow(NORMALVELOCITY,2.0))
+
+# triangle solid related
+Define SLOPE1 1.00/pow(3.0,0.50)
+Define SLOPE2 1.00*pow(3.0,0.50)
+Define WIDTH 0.60
+Define LEFTCOORD 2.50
+Define CENTERCOORD 2.50
+Define RIGHTCOORD (LEFTCOORD+SLOPE2*WIDTH/2.0)
+Define KSLOPE(x1,x2,y1,y2) (y2-y1)/(x2-x1)
+Define BINTERCEPT(x1,x2,y1,y2) (x2*y1-x1*y2)/(x2-x1)
+# calculation of apex coordinates of the triangle
+Define TP1X (LEFTCOORD)
+Define TP1Y (CENTERCOORD)
+Define TP2X (RIGHTCOORD)
+Define TP2Y (CENTERCOORD+0.50*WIDTH)
+Define TP3X (RIGHTCOORD)
+Define TP3Y (CENTERCOORD-0.50*WIDTH)
+
+1 0 GfsRiver GfsBox GfsGEdge {
+    x = 0.5 y = 0.5 
+} {
+
+    Time { end = 9 }
+
+    PhysicalParams { L = 5.0 g = 9.81 }
+
+    # triangular solid
+    # to define a standalone function?
+    # Global {
+    #     double triangle (double x, double y) {
+    #         double y1 = 0.2/4.;
+    #         double y2 = 1e-6/4.;
+    #         
+    #         return x <= -0.25 ? y1 : 
+    #                x < 0.25 ? y2 + 0.5*(y1 - y2)*(1. + cos (2.*M_PI*(x + 0.25))) : 
+    #                y2;
+    #     }
+    # }
+    #Solid (cube(3.30,3.,0.,0.6))
+    #Solid (sphere(3.30,3.,0.,0.3))
+    #return union (union (line1, line2), line3);
+    Solid ({
+        double k1 = KSLOPE(TP1X,TP2X,TP1Y,TP2Y);
+        double k2 = KSLOPE(TP1X,TP3X,TP1Y,TP3Y);
+        double b1 = BINTERCEPT(TP1X,TP2X,TP1Y,TP2Y);
+        double b2 = BINTERCEPT(TP1X,TP3X,TP1Y,TP3Y);
+        double line1 = - (k1*x - y + b1);
+	    double line2 = (k2*x - y + b2);
+        double line3 = x - RIGHTCOORD;
+        return intersection (intersection (line1, line2), line3);
+    })
+
+    RefineSolid 9
+
+    Init {} {
+        # Initial normal flow
+	    P = 0.00798
+	    U = 0.00828324
+    }
+
+    Init { istep = 1 } {
+	# Initial normal flow
+	# P = 0.00798
+	# U = 0.00828324
+
+    # implicit quadratic bottom friction with coefficient based on normal flow
+	U = (P > DRY ? (U + GRAVITYCOEFF * CHANNELSLOPE * P * dt)/(1. + dt*0.50*CF*Velocity/P) : 0.)
+	V = (P > DRY ? V/(1. + dt*0.50*CF*Velocity/P) : 0.)
+    P = (P > DRY ? P : 0.)
+    }
+
+    # AdvectionParams { 
+    #     gradient = gfs_center_sweby_gradient
+    #     # cfl = 0.5
+    #     }
+
+    Refine 5
+    Refine ((y>1.5)&&(y<3.5)&&(x>1.0)&&(x<4.0) ? 9 : 5)
+     #  AdaptGradient { istep = 1 } {
+     #     cmax = 8e-5
+     #     cfactor = 2
+     #     maxlevel = 10
+     #  } P
+      
+      #(P < DRY ? 0. : P + Zb)
+
+    OutputTime { istep = 10 } stderr
+    # OutputSimulation { istep = 10 } stdout
+    OutputSimulation { step = 1.0 } snapshot-%g.gfs
+    OutputSimulation { step = 1.0 } snapshotTecplot-%g.plt {
+        format = Tecplot
+    }
+    OutputSimulation { step = 1.0 } snapshotText-%g.txt {
+        format = text
+    }
+    
+    OutputSolidForce { istart = 1 istep = 1 } f
+    
+}
+GfsBox {
+left = Boundary {
+    BcDirichlet P 0.00798
+    BcDirichlet U 0.00828324
+    BcDirichlet V 0.0
+}
+right = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+top = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+bottom = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
