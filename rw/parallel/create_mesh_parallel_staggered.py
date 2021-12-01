@@ -79,11 +79,13 @@ bottom = Boundary {
             file.write('\n')
             file.write("# {0}th box above".format(i))
             file.write('\n')
+            flag = not flag
         else:
             file.write(bc_string_middle1)
             file.write('\n')
             file.write("# {0}th box above".format(i))
             file.write('\n')
+            flag = not flag
 
     # the last box
     bc_string_last = """GfsBox {
