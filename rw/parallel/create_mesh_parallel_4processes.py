@@ -111,7 +111,7 @@ bottom = Boundary {
 
     # the last box
     bc_string_last = """GfsBox {
-pid = 2
+pid = 3
 right = Boundary {
     BcNeumann P 0.0
     BcNeumann U 0.0
