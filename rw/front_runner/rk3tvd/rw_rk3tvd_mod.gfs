@@ -93,16 +93,16 @@ Define TP3Y (CENTERCOORD-0.50*WIDTH)
 	# TVD RK3
     # follow the integration procedure suggested by E.F.Toro
     # first stage
-	UMed = (P > DRY ? U + dt * (GRAVITYCOEFF * CHANNELSLOPE * P - 0.50*CF*Velocity*U/P) : 0.)
-	VMed = (P > DRY ? V + dt * (- 0.50*CF*Velocity*V/P) : 0.)
+	UMed1 = (P > DRY ? U + dt * (GRAVITYCOEFF * CHANNELSLOPE * P - 0.50*CF*Velocity*U/P) : 0.)
+	VMed1 = (P > DRY ? V + dt * (- 0.50*CF*Velocity*V/P) : 0.)
 
 	# second stage
-	UMed = (P > DRY ? (3.0/4.0)*U + (1.0/4.0)*UMed + (1.0/4.0)*dt*(GRAVITYCOEFF * CHANNELSLOPE * P - 0.50*CF*pow((pow(UMed,2.0)+pow(VMed,2.0)),0.50)*UMed/pow(P,2.0)) : 0.)
-	VMed = (P > DRY ? (3.0/4.0)*V + (1.0/4.0)*VMed + (1.0/4.0)*dt*(-0.50*CF*pow((pow(UMed,2.0)+pow(VMed,2.0)),0.50)*VMed/pow(P,2.0)) :0.)
+	UMed2 = (P > DRY ? (3.0/4.0)*U + (1.0/4.0)*UMed1 + (1.0/4.0)*dt*(GRAVITYCOEFF * CHANNELSLOPE * P - 0.50*CF*pow((pow(UMed1,2.0)+pow(VMed1,2.0)),0.50)*UMed1/pow(P,2.0)) : 0.)
+	VMed2 = (P > DRY ? (3.0/4.0)*V + (1.0/4.0)*VMed1 + (1.0/4.0)*dt*(-0.50*CF*pow((pow(UMed1,2.0)+pow(VMed1,2.0)),0.50)*VMed1/pow(P,2.0)) :0.)
 
 	# third stage
-	U = (P > DRY ? (1.0/3.0)*U+(2.0/3.0)*UMed+(2.0/3.0)*dt*(GRAVITYCOEFF * CHANNELSLOPE * P - 0.50*CF*pow((pow(UMed,2.0)+pow(VMed,2.0)),0.50)*UMed/pow(P,2.0)) : 0.)
-    V = (P > DRY ? (1.0/3.0)*V+(2.0/3.0)*VMed+(2.0/3.0)*dt*(-0.50*CF*pow((pow(UMed,2.0)+pow(VMed,2.0)),0.50)*VMed/pow(P,2.0)) : 0.)
+	U = (P > DRY ? (1.0/3.0)*U+(2.0/3.0)*UMed2+(2.0/3.0)*dt*(GRAVITYCOEFF * CHANNELSLOPE * P - 0.50*CF*pow((pow(UMed2,2.0)+pow(VMed2,2.0)),0.50)*UMed2/pow(P,2.0)) : 0.)
+    	V = (P > DRY ? (1.0/3.0)*V+(2.0/3.0)*VMed2+(2.0/3.0)*dt*(-0.50*CF*pow((pow(UMed2,2.0)+pow(VMed2,2.0)),0.50)*VMed2/pow(P,2.0)) : 0.)
 
     # PPrev = P
 
