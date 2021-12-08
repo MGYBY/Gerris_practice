@@ -7,6 +7,7 @@ cat meshFile >> shock_adapt1.gfs
 echo "Mesh finished."
 
 # gauge location file (centreline)
+# !!!please make sure that this is centreline slice!!!
 awk 'BEGIN{ for (x = 0.0; x <= 162.0; x += 162.0/24000.) print x, 0.75, 0.;}' > gaugeLoc
 
 echo "Slice gauges finished."
