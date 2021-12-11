@@ -1,0 +1,148 @@
+# Title: 2D VOF roll wave simulation.
+#
+# Description:
+# 2D VOF simulation to reproduce Brock (1967)'s experiment
+
+# Density and Viscosity defined in the main program
+
+# Domain extent
+# shorter than Brock's flume, but long enough to reproduce PRW.
+Define LBOX 0.50
+
+# Normal Flow
+Define NORMALDEPTH 0.00798
+Define NORMALVELOCITY 1.038
+Define GRAVITYCOEFF 9.81
+Define CHANNELSLOPE 0.05011
+Define FROUDE (NORMALVELOCITY/pow((GRAVITYCOEFF*NORMALDEPTH),0.50))
+
+# Maximum refinement
+# Use 40 1x1m boxes
+# Max resolution: 16+ cells along normal depth
+Define MAXLEVEL 10
+# Min resolution: 4+ cells along normal depth
+Define MINLEVEL 8
+
+# Use filter (for large density ratio)
+Define FILTER 1.0
+
+Define INITLENGTH (LBOX/32.0)
+
+40 39 GfsSimulation GfsBox GfsGEdge { 
+    # shift origin of the domain
+    x = 0.5 y = 0.5 
+} {
+    Global{
+	static double air_density = 1.;
+	static double water_density = 1000.;
+
+    static double air_viscosity = 1E-5;  // dynamic
+    static double water_viscosity = 1E-3;
+
+    // static double amplitude = 0.20;
+    static double amplitude = 0.0;
+    static double distPeriod = 0.933;
+
+    // depth (p) wave-maker
+    static double depth_bc(double t) {
+        if (t<distPeriod/2.0) return (NORMALDEPTH*(1.0+amplitude*sin(2.0*M_PI*t/distPeriod)));
+        else return (NORMALDEPTH);
+    }
+
+    // momentum (U) wave-maker
+    static double velocity_bc(double t) {
+        if (t<distPeriod/2.0) return (FROUDE*pow((GRAVITYCOEFF*pow((NORMALDEPTH*(1.0+amplitude*sin(2.0*M_PI*t/distPeriod))),3.0)),0.50));
+        else return (NORMALVELOCITY*NORMALDEPTH);
+    }
+
+    // momentum (U) wave-maker
+    static double velocity_bc_periodic(double t) {
+        return (NORMALVELOCITY*(1.0+amplitude*sin(2.0*M_PI*t/distPeriod)));
+    }
+        
+	double var(double T, double Tf, double min, double max){
+	    if(FILTER > 0.5)  // True for 1.0 use filter
+	        return min + CLAMP(Tf, 0, 1)*(max - min);
+	    else
+		return min + CLAMP(T, 0, 1)*(max - min);
+	}
+	
+	double set_density(double T, double Tf)
+	{
+	    return var(T, Tf, air_density, water_density);
+	}
+
+	double set_viscosity(double T, double Tf)
+	{
+	    return var(T, Tf, air_viscosity, water_viscosity);
+	}
+
+    }
+
+    PhysicalParams { L = LBOX }
+
+    Time { end = 20.0 dtmax = 1e-2 }
+
+    # We need to tune the solver
+    ApproxProjectionParams { tolerance = 1e-4 }
+    ProjectionParams { tolerance = 1e-4 }
+
+    # VOF tracer and interface positions
+    VariableTracerVOF T
+    
+    VariablePosition X T x
+    VariablePosition Y T y
+
+    VariableFiltered Tf T 1
+    PhysicalParams { alpha = 1./set_density(T, Tf) }
+
+    # mu(I) granular rheology
+    SourceViscosity set_viscosity(T, Tf) {
+	beta = 1 
+	tolerance = 1e-4
+    }
+
+    # Track a "band" around the interface to resolve surface gradients
+    # properly
+    AdaptGradient { istep = 1 } {
+	cmax = 0.0
+    # cmax = 1e-2
+	maxlevel = MAXLEVEL
+    # minlevel = MINLEVEL
+    } T
+
+    # Use constant resolution inside the granular material
+    AdaptFunction { istep = 1 } {
+	cmax = 0
+    cfactor = 2
+	maxlevel = MAXLEVEL
+    # minlevel = MINLEVEL
+    } (T > 0 && T < 1)
+    # T
+
+    # gravity
+    Source V (-1.0)*GRAVITYCOEFF*pow(1-pow(CHANNELSLOPE,2.0),0.50)
+    Source U GRAVITYCOEFF*CHANNELSLOPE
+
+    # initial conditions
+    # first try start from dry bed
+    # Refine 6
+    # InitFraction T (union(H0 - y, R0 - x))
+    InitFraction T (union(NORMALDEPTH - y, INITLENGTH - x))
+    Init {} {
+        # Initial normal flow
+	U = x<NORMALDEPTH ? NORMALVELOCITY : 0.0
+    V = 0.0
+    }
+
+    OutputTime { istep = 10 } stderr
+    OutputProjectionStats { istep = 10 } stderr
+    OutputDiffusionStats { istep = 10 } stderr
+
+    # remove ejected droplets (just in case)
+    RemoveDroplets { istep = 1 } T -1
+
+    OutputSimulation { step = 0.25 } snaptshot-%g.gfs
+    OutputSimulation { start = 0 step = 0.01 end = 0.10} snaptshot-%g.gfs
+
+}
