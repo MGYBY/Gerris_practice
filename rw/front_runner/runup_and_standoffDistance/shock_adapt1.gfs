@@ -1,0 +1,164 @@
+# Title: The square and circular cylinder impacted by the normal flow
+#
+# Description:
+#
+
+# below this depth the flow is considered "dry"
+Define DRY 1e-5
+Define GRAVITYCOEFF 9.81
+Define CHANNELSLOPE 0.05011
+Define NORMALDEPTH 0.00798
+Define NORMALVELOCITY 1.038
+Define CF (2.0*GRAVITYCOEFF*CHANNELSLOPE*NORMALDEPTH/pow(NORMALVELOCITY,2.0))
+Define FROUDE (NORMALVELOCITY/pow((GRAVITYCOEFF*NORMALDEPTH),0.50))
+
+# mesh adaptivity parameters
+Define MAXLEVEL 9
+Define MINLEVEL 5
+
+54 53 GfsRiver GfsBox GfsGEdge {
+    x = 0.5 y = 0.5
+} {
+    # define the inlet disturbance BC
+    Global {
+        // Parameters
+        static double amplitude = 0.20;
+        static double distPeriod = 0.933;
+
+        // depth (p) wave-maker
+        static double depth_bc(double t) {
+            if (t<distPeriod/2.0) return (NORMALDEPTH*(1.0+amplitude*sin(2.0*M_PI*t/distPeriod)));
+            else return (NORMALDEPTH);
+        }
+
+        // momentum (U) wave-maker
+        static double velocity_bc(double t) {
+            if (t<distPeriod/2.0) return (FROUDE*pow((GRAVITYCOEFF*pow((NORMALDEPTH*(1.0+amplitude*sin(2.0*M_PI*t/distPeriod))),3.0)),0.50));
+            else return (NORMALVELOCITY*NORMALDEPTH);
+        }
+
+    }
+
+    Time { end = 110.0 }
+
+    PhysicalParams { L = 3.0 g = 9.81 }
+
+    # We use a sphere knowing that in 2D the resulting object will be
+    # a cross-section of the sphere at z = 0 i.e. a cylinder of radius
+    # 0.5
+    Solid (cube(160.30,1.50,0.,0.6))
+    # Solid (sphere(160.30,1.50,0.0,0.3))
+    # Solid ({
+    #     double k1 = KSLOPE(TP1X,TP2X,TP1Y,TP2Y);
+    #     double k2 = KSLOPE(TP1X,TP3X,TP1Y,TP3Y);
+    #     double b1 = BINTERCEPT(TP1X,TP2X,TP1Y,TP2Y);
+    #     double b2 = BINTERCEPT(TP1X,TP3X,TP1Y,TP3Y);
+    #     double line1 = - (k1*x - y + b1);
+	#     double line2 = (k2*x - y + b2);
+    #     double line3 = x - RIGHTCOORD;
+    #     return intersection (intersection (line1, line2), line3);
+    # })
+
+    RefineSolid 9
+
+    Init {} {
+        # Initial normal flow
+	    P = 0.00798
+	    U = 0.00828324
+        V = 0.0
+
+        Pmax = 0.
+        Atime = -1.
+
+	    # PPrev = P
+        # UMed = U
+        # VMed = V
+    }
+
+    Init { istep = 1 } {
+	# TVD RK3
+    # follow the integration procedure suggested by E.F.Toro
+    # first stage
+	UMed = (P > DRY ? U + dt * (GRAVITYCOEFF * CHANNELSLOPE * P - 0.50*CF*Velocity*U/P) : 0.)
+	VMed = (P > DRY ? V + dt * (- 0.50*CF*Velocity*V/P) : 0.)
+
+	# second stage
+	UMed = (P > DRY ? (3.0/4.0)*U + (1.0/4.0)*UMed + (1.0/4.0)*dt*(GRAVITYCOEFF * CHANNELSLOPE * P - 0.50*CF*pow((pow(UMed,2.0)+pow(VMed,2.0)),0.50)*UMed/pow(P,2.0)) : 0.)
+	VMed = (P > DRY ? (3.0/4.0)*V + (1.0/4.0)*VMed + (1.0/4.0)*dt*(-0.50*CF*pow((pow(UMed,2.0)+pow(VMed,2.0)),0.50)*VMed/pow(P,2.0)) :0.)
+
+	# third stage
+	U = (P > DRY ? (1.0/3.0)*U+(2.0/3.0)*UMed+(2.0/3.0)*dt*(GRAVITYCOEFF * CHANNELSLOPE * P - 0.50*CF*pow((pow(UMed,2.0)+pow(VMed,2.0)),0.50)*UMed/pow(P,2.0)) : 0.)
+    V = (P > DRY ? (1.0/3.0)*V+(2.0/3.0)*VMed+(2.0/3.0)*dt*(-0.50*CF*pow((pow(UMed,2.0)+pow(VMed,2.0)),0.50)*VMed/pow(P,2.0)) : 0.)
+
+    # PPrev = P
+
+    # implicit quadratic bottom friction with coefficient based on normal flow
+	# U = (P > DRY ? (U + GRAVITYCOEFF * CHANNELSLOPE * P * dt)/(1. + dt*0.50*CF*Velocity/P) : 0.)
+	# V = (P > DRY ? V/(1. + dt*0.50*CF*Velocity/P) : 0.)
+    # P = (P > DRY ? P : 0.)
+
+    # maximum amplitude
+    Pmax = (P > DRY && P > Pmax ? H : Pmax)
+    # arrival time for an amplitude of at least 2x(normaldepth), specifically aimed for front runner
+	Atime = (Atime >= 0. ? Atime : P > DRY && (P) > (2.0*NORMALDEPTH) && P > Pmax ? t : -1.)
+    }
+
+    AdvectionParams {
+        gradient = gfs_gm_yu_gradient
+        # gradient = gfs_center_sweby_gradient
+        cfl = 0.25
+        }
+
+    # Refine 4
+    Refine ((x<1.0) ? 9 : 6)
+    AdaptGradient { istart = 1 istep = 1} {
+       cmax = 0.55e-3
+       cfactor = 2
+       # cfactor = 4
+       maxlevel = MAXLEVEL
+       minlevel = MINLEVEL
+    } P
+
+    # AdaptError { istart = 1 istep = 1 end = 12.0 } { cmax = 3.0e-5 maxlevel = MAXLEVEL minlevel = MINLEVEL } P
+    AdaptError { istart = 1 istep = 1 } { cmax = 6.35e-5 maxlevel = MAXLEVEL minlevel = MINLEVEL } P
+
+      #(P < DRY ? 0. : P + Zb)
+
+    OutputTime { istep = 10 } stderr
+    # OutputSimulation { istep = 10 } stdout
+    OutputSimulation { step = 1.0 } snapshot-%g.gfs { format = gfs variables = P,Pmax,Atime }
+    # OutputSimulation { step = 4.0 } snapshotTecplot-%g.tec {
+    #    format = Tecplot
+    #    variables = P
+    #}
+    OutputSimulation { step = 4.0 } snapshotText-%g.txt {
+        format = text
+        variables = P,Pmax,Atime
+    }
+
+    OutputSolidForce { istart = 1 istep = 1 } f
+
+    OutputLocation { step = 2.00 } slice-%g gaugeLoc
+
+    # maximum runup gauge
+    OutputLocation { istep = 1 } Rmax 159.997 1.50 0.0
+
+    EventList { start = 88.95 istep = 1 end = 105.20 } {
+        OutputLocation {} centerlineSlice-%g centerlineGaugeLoc
+
+        EventScript {} {
+            python3 shock_standoff.py $GfsTime
+            # sleep 3 # give a chance to catch up
+            # rm -f centerline
+        }
+
+        EventScript {} {
+            # sleep 3 # give a chance to catch up
+            rm -f centerlineSlice*
+        }
+    }
+
+} {
+    dry = DRY
+    scheme = kinetic
+}
