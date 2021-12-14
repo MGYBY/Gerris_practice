@@ -63,8 +63,8 @@ Define MINLEVEL 5
 
     Init {} {
         # Initial normal flow
-	    P = 0.00798
-	    U = 0.00828324
+	    P = NORMALDEPTH
+	    U = NORMALDEPTH*NORMALVELOCITY
         V = 0.0
 
         Pmax = 0.
