@@ -115,12 +115,12 @@ bottom = Boundary {
             file.write('\n')
             file.write("# {0}th box above".format(i))
             file.write('\n')
-        elif (x_beginning>40.0 and x_beginning<80.0):
+        elif (x_beginning>=40.0 and x_beginning<80.0):
             file.write(bc_string_middle2)
             file.write('\n')
             file.write("# {0}th box above".format(i))
             file.write('\n')
-        elif (x_beginning>80.0 and x_beginning<140.0):
+        elif (x_beginning>=80.0 and x_beginning<140.0):
             file.write(bc_string_middle3)
             file.write('\n')
             file.write("# {0}th box above".format(i))
