@@ -103,7 +103,7 @@ Define RMAXGAUGEX (120.0-0.50*162.0/(54*pow(2,9)))
 	Pmax = (P > DRY && P > Pmax ? H : Pmax)
 
     # arrival time for an amplitude of at least 2x(normaldepth), specifically aimed for front runner
-	Atime = (Atime >= 0. ? Atime : P > DRY && (P) > (2.0*NORMALDEPTH) && P > Pmax ? t : -1.)
+	Atime = (Atime >= 0. ? Atime : P > DRY && (P) > (2.0*NORMALDEPTH) ? t : -1.)
     }
 
     AdvectionParams {
