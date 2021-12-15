@@ -100,7 +100,7 @@ Define MINLEVEL 5
     # maximum amplitude
     Pmax = (P > DRY && P > Pmax ? H : Pmax)
     # arrival time for an amplitude of at least 2x(normaldepth), specifically aimed for front runner
-	Atime = (Atime >= 0. ? Atime : P > DRY && (P) > (2.0*NORMALDEPTH) && P > Pmax ? t : -1.)
+	Atime = (Atime >= 0. ? Atime : P > DRY && (P) > (2.0*NORMALDEPTH) ? t : -1.)
     }
 
     AdvectionParams {
