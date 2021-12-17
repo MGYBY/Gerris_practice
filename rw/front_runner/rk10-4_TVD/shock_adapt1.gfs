@@ -122,7 +122,7 @@ Define MINLEVEL 5
     }
 
     AdvectionParams {
-        # gradient = gfs_gm_yu_gradient
+        gradient = gfs_gm_yu_gradient
         # gradient = gfs_center_sweby_gradient
         cfl = 0.25
         }
