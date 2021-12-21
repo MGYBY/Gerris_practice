@@ -7,5 +7,6 @@ Useful links:
 3. http://basilisk.fr/sandbox/M1EMN/Exemples/bagnold_periodic_cohesif.c
 4. http://basilisk.fr/sandbox/vatsal/GenaralizedNewtonian/Couette_NonNewtonian.c
 5. http://basilisk.fr/sandbox/lucaspagoto/Elasto_viscoplastic/shear_droplet2.c
-6. http://basilisk.fr/sandbox/hiranya/viscoplasticsheet.c
-7. 
+6. http://basilisk.fr/sandbox/M1EMN/Exemples/column_SCC.c
+7. http://basilisk.fr/sandbox/hiranya/viscoplasticsheet.c
+8. 
