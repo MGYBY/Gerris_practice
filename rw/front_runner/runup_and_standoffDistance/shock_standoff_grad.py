@@ -24,7 +24,7 @@ num_gauge = np.size(val)
 max_grad = val[0]-val[2]
 max_grad_loc = loc[0]
 
-for i in range(1,num_gauge):
+for i in range(1,num_gauge-1):
     if((val[i+1]-val[i-1]>max_grad) and ((160.0-loc[i])>0.001)):
         max_grad = val[i+1]-val[i-1]
         max_grad_loc = loc[i]
