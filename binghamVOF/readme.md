@@ -10,3 +10,4 @@ Useful links:
 6. http://basilisk.fr/sandbox/M1EMN/Exemples/column_SCC.c
 7. http://basilisk.fr/sandbox/hiranya/viscoplasticsheet.c
 8. http://basilisk.fr/sandbox/M1EMN/Exemples/bingham_tube.c
+9. Refer to this code for inclusion of gravity: http://basilisk.fr/sandbox/M1EMN/Exemples/granular_column_cohesif.c
