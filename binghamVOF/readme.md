@@ -9,4 +9,4 @@ Useful links:
 5. http://basilisk.fr/sandbox/lucaspagoto/Elasto_viscoplastic/shear_droplet2.c
 6. http://basilisk.fr/sandbox/M1EMN/Exemples/column_SCC.c
 7. http://basilisk.fr/sandbox/hiranya/viscoplasticsheet.c
-8. 
+8. http://basilisk.fr/sandbox/M1EMN/Exemples/bingham_tube.c
