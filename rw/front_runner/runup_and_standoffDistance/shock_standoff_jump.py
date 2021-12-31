@@ -21,14 +21,14 @@ val = a[:,1]
 loc = a[:,0]
 
 num_gauge = np.size(val)
-max_grad = 0.0
+# max_grad = 0.0
 max_grad_loc = loc[0]
 
 # locate the first discontinuity
 for i in range(1,num_gauge-1):
     # note that "abs" should not be used. Otherwise the FR sharp front would be catpured.
-    if(((val[i+1]-val[i])>1.99*((val[i]-val[i-1]))) and (np.abs(obs_loc-loc[i])>0.01)):
-        max_grad = val[i+1]-val[i-1]
+    if(((val[i+1]-val[i])>1.99*((val[i]-val[i-1])))  and (val[i+1]-val[i]>0.0) and (np.abs(obs_loc-loc[i])>0.01)):
+        # max_grad = val[i+1]-val[i-1]
         max_grad_loc = loc[i]
         break
 
