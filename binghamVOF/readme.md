@@ -10,10 +10,21 @@ Useful links:
 6. http://basilisk.fr/sandbox/M1EMN/Exemples/column_SCC.c
 7. http://basilisk.fr/sandbox/hiranya/viscoplasticsheet.c
 8. http://basilisk.fr/sandbox/M1EMN/Exemples/bingham_tube.c
-9. Refer to this code for inclusion of gravity: http://basilisk.fr/sandbox/M1EMN/Exemples/granular_column_cohesif.c
+9. Refer to this code for inclusion of gravity: 
+
+                                                http://basilisk.fr/sandbox/M1EMN/Exemples/granular_column_cohesif.c
+
                                                 http://basilisk.fr/src/test/poiseuille45.c
-11. Solid force: http://basilisk.fr/sandbox/ghigo/src/test-navier-stokes/cylinder-accelerating.c
+
+11. Solid force: 
+
+                 http://basilisk.fr/sandbox/ghigo/src/test-navier-stokes/cylinder-accelerating.c
+
                  http://basilisk.fr/sandbox/ghigo/src/test-navier-stokes/cylinder-strouhal.c
+                 
                  http://basilisk.fr/sandbox/ghigo/src/myspheroid.h
+                 
                  http://basilisk.fr/src/test/starting.c
+ 
+ 11. 
                  
