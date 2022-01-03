@@ -12,6 +12,8 @@ Useful links:
 8. http://basilisk.fr/sandbox/M1EMN/Exemples/bingham_tube.c
 9. Some free-surface treatments:
 
+        http://basilisk.fr/sandbox/M1EMN/Exemples/granular_column.c
+
 11. Refer to these codes for inclusion of gravity: 
 
                                                 http://basilisk.fr/sandbox/M1EMN/Exemples/granular_column_cohesif.c
