@@ -191,7 +191,7 @@ Define AIRVIS 1.0
     OutputView { step = 0.005 } {
 	ppm2mpeg -b 3600K > depth.mpg
     } { width = 400 height = 400 } f.gfv
-    OutputView { start = 0.005 } {
+    OutputView { step = 0.005 } {
 	ppm2mpeg -b 3600K > level.mpg
     } { width = 400 height = 400 } level.gfv
 }
