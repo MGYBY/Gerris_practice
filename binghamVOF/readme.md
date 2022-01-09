@@ -29,6 +29,14 @@ Useful links:
                  http://basilisk.fr/sandbox/ghigo/src/myspheroid.h
                  
                  http://basilisk.fr/src/test/starting.c
+                 
+12. Gerris examples:
+
+```
+http://gfs.sourceforge.net/wiki/index.php/Cremonesi_et_al_benchmark
+http://gerris.dalembert.upmc.fr/gerris/tests/tests/couette.html
+http://gerris.dalembert.upmc.fr/gerris/examples/examples/column.html#htoc9
+```
  
- 11. 
+
                  
