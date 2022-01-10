@@ -117,8 +117,8 @@ Define AIRVIS 1.0
     Time { end = 40.0 dtmax = 4e-3 }
 
     # We need to tune the solver
-    ApproxProjectionParams { tolerance = 1e-4 }
-    ProjectionParams { tolerance = 1e-4 }
+    ApproxProjectionParams { tolerance = 1e-4 nitermax = 175 nitermin = 6}
+    ProjectionParams { tolerance = 1e-4  nitermax = 175 nitermin = 6}
 
     # VOF tracer and interface positions
     VariableTracerVOF T
@@ -136,6 +136,8 @@ Define AIRVIS 1.0
     # Bingham rheology viscosity
     SourceViscosity {} (MU(Tf,D2)) {
 	beta = 1
+	# beta = 0.5
+	nitermin = 6
     }
 
     # Track a "band" around the interface to resolve surface gradients
