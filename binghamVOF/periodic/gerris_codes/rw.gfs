@@ -126,7 +126,11 @@ Define AIRVIS 1.0
     VariablePosition X T x
     VariablePosition Y T y
 
-    VariableFiltered Tf T 1
+    # note that the filter would greatly improve convergence for large density and viscosity ratio
+    # Basilisk code use 2 times filter by default
+    # VariableFiltered Tf T 1
+    # VariableFiltered Tf T 2
+    VariableFiltered Tf T 3
     PhysicalParams { alpha = 1./set_density(Tf) }
 
     # Bingham rheology viscosity
