@@ -30,6 +30,8 @@ Useful links:
                  
                  http://basilisk.fr/src/test/starting.c
                  
+                 http://gerris.dalembert.upmc.fr/gerris/examples/examples/ship.html#htoc17
+                 
 12. Gerris examples:
 
 ```
