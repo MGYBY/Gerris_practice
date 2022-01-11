@@ -116,6 +116,8 @@ Define AIRVIS 1.0
     PhysicalParams { L = LBOX }
 
     Time { end = 40.0 dtmax = 4e-3 }
+    
+    AdvectionParams { cfl = 0.4 }
 
     # We need to tune the solver
     ApproxProjectionParams { tolerance = 1e-4 nitermax = 175 nitermin = 6}
