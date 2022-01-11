@@ -205,7 +205,7 @@ Define AIRVIS 1.0
 GfsBox {
     pid = 0
     top = Boundary {
-	# BcDirichlet P -RHOF*LDOMAIN
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
 	BcDirichlet P 0.0
 	BcNeumann V 0
     }
@@ -217,7 +217,7 @@ GfsBox {
 GfsBox {
     pid = 1
     top = Boundary {
-	# BcDirichlet P -RHOF*LDOMAIN
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
 	BcDirichlet P 0.0
 	BcNeumann V 0
     }
@@ -229,7 +229,7 @@ GfsBox {
 GfsBox {
     pid = 2
     top = Boundary {
-	# BcDirichlet P -RHOF*LDOMAIN
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
 	BcDirichlet P 0.0
 	BcNeumann V 0
     }
@@ -241,7 +241,7 @@ GfsBox {
 GfsBox {
     pid = 3
     top = Boundary {
-	# BcDirichlet P -RHOF*LDOMAIN
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
 	BcDirichlet P 0.0
 	BcNeumann V 0
     }
