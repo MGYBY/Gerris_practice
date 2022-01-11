@@ -195,12 +195,12 @@ Define AIRVIS 1.0
     OutputLocation { istep = 1 } { awk -f distance.awk > probe1 } gaugeLoc { interpolate = 0 }
 
     GModule gfsview
-    OutputView { step = 0.005 } {
-	ppm2mpeg -b 3600K > depth.mpg
-    } { width = 400 height = 400 } f.gfv
-    OutputView { step = 0.005 } {
-	ppm2mpeg -b 3600K > level.mpg
-    } { width = 400 height = 400 } level.gfv
+    OutputView { step = 0.01 } {
+	ppm2mpeg -s 1600x400 > depth.mpg
+    } { width = 1600 height = 400 } f1.gfv
+    OutputView { step = 0.01 } {
+	ppm2mpeg -s 1600x400 > level.mpg
+    } { width = 1600 height = 400 } level.gfv
 }
 GfsBox {
     pid = 0
