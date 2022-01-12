@@ -91,6 +91,7 @@ Define AIRVIS 1.0
 	    double m, mu, N;
 	    double mu_max = 1000.0;
 	    // increase mu_max could improve convergence
+	    // ref. to Staron et al. 2013, Deka et al. 2019 for discussion
 	    double mu_max = 12000.0;
 
 	    switch (MODEL) {
