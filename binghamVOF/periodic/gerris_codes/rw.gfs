@@ -90,6 +90,8 @@ Define AIRVIS 1.0
 	    double ty = YIELDSTRESS;
 	    double m, mu, N;
 	    double mu_max = 1000.0;
+	    // increase mu_max could improve convergence
+	    double mu_max = 12000.0;
 
 	    switch (MODEL) {
 		case 0: /* Newtonian */
