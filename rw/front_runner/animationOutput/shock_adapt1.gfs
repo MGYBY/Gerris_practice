@@ -136,7 +136,6 @@ Define MINLEVEL 5
 	ppm2mpeg -s 840x600 > depth.mpg
     } { width = 700 height = 500 } amp.gfv
 
-    GModule gfsview
     OutputView { start = 99.0 istep = 3 } {
 	ppm2mpeg -s 840x600 > depth2.mpg
     } { width = 700 height = 500 } amp.gfv
