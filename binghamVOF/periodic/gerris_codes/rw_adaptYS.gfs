@@ -1,0 +1,287 @@
+# Title: 2D VOF Bingham roll simulation
+#
+# Description:
+# 2D VOF Bingham roll simulation to reproduce Liu & Mei (1994)'s results: alpha = 0.3, beta = 27
+
+# Domain extent
+# follow Liu & Mei's choice, periodic BC
+Define LDOMAIN 18.262
+Define LBOX (LDOMAIN/4.0)
+
+# Normal Flow
+Define NORMALDEPTH 0.237831
+Define GRAVITYCOEFF 9.81
+Define CHANNELSIN 0.0680335
+Define CHANNELCOS (pow((1.0-pow(CHANNELSIN,2.0)),0.50))
+Define ALPHACOEFF 0.30
+Define BETACOEFF 27.0
+
+# disturbance parameters
+Define DISTAmp 0.0
+# if use non-periodic BC, a wavelength is also needed
+
+# Maximum refinement: guarantee more than 24 cell through normal depth
+Define MAXLEVEL 9
+Define MINLEVEL 4
+Define INITLEVEL 7
+
+# max run-time
+Define TMAX = 32.0
+Define TOUTPUT = 0.05
+Define TSNAP = 2.0
+
+# mesh adaptivity parameters
+Define UEMAX = 0.01
+
+# Use filter (for large density ratio)
+Define FILTER 1.0
+
+# Bingham rheology model
+Define MODEL 3
+Define YIELDSTRESS 100.0
+Define MUREF 10.0
+Define MUDRHO 2100.0
+
+Define AIRRHO 1.12
+Define AIRVIS 6.00
+
+# Define INITLENGTH (LBOX/32.0)
+
+4 4 GfsSimulation GfsBox GfsGEdge {
+    # shift origin of the domain
+    x = 0.5 y = 0.5
+} {
+    Global {
+    double velDist (double y, double x, double YS, double rhoFluid, double hn, double mu0, double Lx, double amp) {
+        double yieldY = hn*(1.0-ALPHACOEFF);
+        double rhogx = MUDRHO*GRAVITYCOEFF*CHANNELSIN;
+        double Up = 0.50*pow((1.0-ALPHACOEFF),2.0)*(rhogx*pow(hn,2.0))/(mu0);
+        double hDist = hn*(1.0+amp*sin(2.0*M_PI*x/Lx));
+        if (y<hDist) {
+            if (y<yieldY) {
+                return (Up*((2.0*y)/(yieldY)-pow((y/yieldY),2.0)));
+            }
+            else return (Up);
+        }
+        else return 0.0;
+    }
+
+    double heightDist (double x,  double hn, double Lx, double amp) {
+        return (hn*(1.0+amp*sin(2.0*M_PI*x/Lx)));
+    }
+
+    double hydroPressureDist(double y, double x, double Lx, double amp, double hn, double rhoFluid) {
+        double gy = GRAVITYCOEFF*CHANNELCOS;
+        double hDist = hn*(1.0+amp*sin(2.0*M_PI*x/Lx));
+        if (y<hDist) return (rhoFluid*gy*y);
+        else return 0.0;
+    }
+
+	double var (double Tf, double min, double max) {
+	// assume filtered by default
+    return min + CLAMP(Tf, 0, 1)*(max - min);
+	}
+
+	double set_density (double Tf) {
+	    return var(Tf, AIRRHO, MUDRHO);
+    }
+
+	double MU (double fm, double d2) {
+	    double ty = YIELDSTRESS;
+	    double m, mu, N;
+	    double mu_max = 60000.0;
+
+	    switch (MODEL) {
+		case 0: /* Newtonian */
+		    ty = 0.; N = 1.; break;
+		case 1: /* Power-law (shear-thinning) */
+		    ty = 0.; N = 0.5; break;
+		case 2: /* Herschel-Bulkley */
+		    N = 0.5; break;
+		case 3: /* Bingham */
+		    N = 1.; break;
+	    }
+	    if (d2 > 0.)
+		m = ty/(2.*d2) + MUREF*exp ((N - 1.)*log (d2));
+	    else {
+		    if (ty > 0. || N < 1.) m = mu_max;
+		    else m = N == 1. ? MUREF : 0.;
+		}
+		mu = MIN (m, mu_max);
+
+		return 1.0/((1.0-fm)/AIRVIS+fm/mu);
+    }
+    }
+
+    PhysicalParams { L = LBOX }
+
+    Time { end = 50.0 dtmax = 4e-3 }
+    
+    AdvectionParams { cfl = 0.4 }
+
+    # We need to tune the solver
+    ApproxProjectionParams { tolerance = 1e-4 nitermax = 175 nitermin = 6}
+    ProjectionParams { tolerance = 1e-4  nitermax = 175 nitermin = 6}
+
+    # VOF tracer and interface positions
+    VariableTracerVOF T
+
+    VariablePosition X T x
+    VariablePosition Y T y
+
+    # note that the filter would greatly improve convergence for large density and viscosity ratio
+    # Basilisk code use 2 times filter by default
+    # VariableFiltered Tf T 1
+    # VariableFiltered Tf T 2
+    VariableFiltered Tf T 3
+    PhysicalParams { alpha = 1./set_density(Tf) }
+
+    # Bingham rheology viscosity
+    SourceViscosity {} {
+        double muVal = (MU(Tf,D2));
+        // yielded = (T*(pow(2,0.5)*muVal*D2))>YIELDSTRESS ? 1 : 0;
+        return muVal;
+    }  {
+	beta = 1
+	tolerance = 0.18e-5
+	# beta = 0.5
+	nitermin = 5
+	nitermax = 125
+    }
+
+    # initial conditions
+    Refine ((y>0.0)&&(y<2.0*NORMALDEPTH) ? MAXLEVEL : MINLEVEL)
+    InitFraction T (heightDist(x,NORMALDEPTH,LDOMAIN,DISTAmp)-y)
+    Init {} {
+        # Initial normal flow
+	U = velDist(y,x,YIELDSTRESS,GRAVITYCOEFF,NORMALDEPTH,MUREF,LDOMAIN,DISTAmp)
+    V = 0.0
+    P = hydroPressureDist(y,x,LDOMAIN,DISTAmp,NORMALDEPTH,MUDRHO)
+    yielded = T<0.01 ? 0 : 1
+    muField = MU(Tf,D2)
+    }
+
+    Init { istep = 1 } {
+        muField = MU(Tf,D2)
+        yielded = (T*(pow(2,0.5)*muField*D2))>YIELDSTRESS ? 1 : 0
+    }
+
+    # Track a "band" around the interface to resolve surface gradients
+    # properly
+    AdaptGradient { istep = 1 } {
+	cmax = 0.0
+    # cmax = 1e-2
+	maxlevel = MAXLEVEL
+    # minlevel = MINLEVEL
+    } T
+
+    # Use constant resolution inside the granular material
+    AdaptFunction { istep = 1 } {
+	cmax = 0
+    cfactor = 2
+	maxlevel = MAXLEVEL
+    # minlevel = MINLEVEL
+    } (T > 0 && T < 1)
+    # (T > 0 && T < 1)
+    # T
+
+    AdaptFunction { istep = 1 } {
+	cmax = 0
+    cfactor = 2
+	maxlevel = MAXLEVEL
+    # minlevel = MINLEVEL
+    } (yielded)
+    # (T > 0 && T < 1)
+    # (yielded > 0 && yielded < 1)
+
+    AdaptError { istep = 1 } { cmax = UEMAX maxlevel = MAXLEVEL } U*T
+    # AdaptError { istep = 1 } { cmax = 1e-2 maxlevel = max_level } V
+
+    # AdaptVorticity { istep = 1 } { cmax = 0.1 maxlevel = level }
+
+    # gravity
+    Source V (-1.0)*GRAVITYCOEFF*CHANNELCOS
+    Source U GRAVITYCOEFF*CHANNELSIN
+
+    OutputTime { istep = 10 } stderr
+    OutputProjectionStats { istep = 10 } stderr
+    OutputDiffusionStats { istep = 10 } stderr
+
+    # remove ejected droplets (just in case)
+    # don't know whether this would help. mass conservation problem?
+    # RemoveDroplets { istep = 1 } T -3
+
+    OutputSimulation { step = 0.1 } snapshot-%g.gfs { variables = T,U,V,yielded }
+    OutputSimulation { step = 2.0 } dump-%g.gfs
+    OutputSimulation { step = 0.4 } snapshotText-%g.txt {
+        format = text
+    }
+
+    OutputLocation { istep = 1 } { awk -f distance.awk > probe1 } gaugeLoc { interpolate = 0 }
+    # OutputLocation { step = 0.1 } slice-%g gaugeLoc # { interpolate = 0 }
+
+    GModule gfsview
+    OutputView { step = 0.02 } {
+	ppm2mpeg -s 2000x800 > depth.mpg
+    } { width = 1000 height = 400 } f.gfv
+    OutputView { step = 0.02 } {
+	ppm2mpeg -s 2000x800 > level.mpg
+    } { width = 1000 height = 400 } level.gfv
+    OutputView { step = 0.02 } {
+	ppm2mpeg -s 2000x800 > vel.mpg
+    } { width = 1000 height = 400 } vel.gfv
+
+    OutputDropletSums { istep = 1 } drops.txt  { v = T*dV   } T
+}
+GfsBox {
+    pid = 0
+    top = Boundary {
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
+	BcDirichlet P 0.0
+	BcNeumann V 0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+GfsBox {
+    pid = 1
+    top = Boundary {
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
+	BcDirichlet P 0.0
+	BcNeumann V 0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+GfsBox {
+    pid = 2
+    top = Boundary {
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
+	BcDirichlet P 0.0
+	BcNeumann V 0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+GfsBox {
+    pid = 3
+    top = Boundary {
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
+	BcDirichlet P 0.0
+	BcNeumann V 0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+1 2 right
+2 3 right
+3 4 right
+4 1 right
