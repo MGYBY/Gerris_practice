@@ -1,0 +1,151 @@
+# Title: The square and circular cylinder impacted by the normal flow
+#
+# Description:
+#
+
+# below this depth the flow is considered "dry"
+Define DRY 1e-5
+Define sinTheta 0.06
+Define cosTheta (pow((1.0-pow(sinTheta, 2.0)), 0.50))
+Define GRAVITYCOEFF (9.81*cosTheta)
+Define nPower 0.30
+Define betaVar (2.0*(1.0+2.0*nPower)/(2.0+3.0*nPower))
+Define muN 150.0
+Define rhoMud 2130.0
+
+Define NORMALDEPTH 1.40
+Define NORMALVELOCITY 6.50
+
+Define width ((NORMALDEPTH)*10.0)
+Define domainLength (width*6.0*2.0)
+Define boxLength (domainLength/2.0)
+Define XB (boxLength/2.0+1.50*width)
+
+Define EPSILONU 6e-5
+
+# mesh adaptivity parameters
+Define MAXLEVEL 7
+Define MINLEVEL 6
+
+2 1 GfsRiver GfsBox GfsGEdge {
+    x = 0.5 y = 0.5 
+} {
+
+    # define the source terms
+    Global {
+        // x-source
+        static double powerLawX(double h, double qx) {
+            return (GRAVITYCOEFF*h*(sinTheta/cosTheta)-(muN/rhoMud)*qx*pow(((1.0+2.0*nPower)/nPower), nPower)*pow(fabs(qx), (nPower-1.0))/pow(h, (2.0*nPower)));
+        }
+
+        // y-source
+        static double powerLawY(double h, double qy) {
+            return ((-1.0)*(muN/rhoMud)*qy*pow(((1.0+2.0*nPower)/nPower), nPower)*pow(fabs(qy), (nPower-1.0))/pow(h, (2.0*nPower)));
+        }
+    }
+
+    Time { end = 40 }
+
+    PhysicalParams { L = boxLength g = GRAVITYCOEFF betaCoeff = betaVar }
+
+    # We use a sphere knowing that in 2D the resulting object will be
+    # a cross-section of the sphere at z = 0 i.e. a cylinder of radius
+    # 0.5
+    Solid (cube((XB+width/2.0), boxLength/2.0 ,0.0 , width))
+    # Solid (sphere((XB+width/2.0), boxLength/2.0 ,0.0 , width/2.0))
+    RefineSolid MAXLEVEL
+
+    Init {} {
+        # Initial normal flow
+	    P = NORMALDEPTH
+	    U = NORMALDEPTH*NORMALVELOCITY
+    }
+
+    Init { istep = 1 } {
+	# TVD RK3
+    # follow the integration procedure suggested by E.F.Toro
+    # first stage
+    UMed1 = ((P > DRY && fabs(U/P) > EPSILONU) ? U + dt * powerLawX(P, U) : 0.)
+    VMed1 = ((P > DRY && fabs(V/P) > EPSILONU) ? V + dt * powerLawY(P, V) : 0.)
+
+	# second stage
+	UMed2 = ((P > DRY && fabs(U/P) > EPSILONU) ? (3.0/4.0)*U + (1.0/4.0)*UMed1 + (1.0/4.0)*dt*powerLawX(P, UMed1) : 0.)
+	VMed2 = ((P > DRY && fabs(V/P) > EPSILONU) ? (3.0/4.0)*V + (1.0/4.0)*VMed1 + (1.0/4.0)*dt*powerLawY(P, VMed1) : 0.)
+
+	# third stage
+	U = ((P > DRY && fabs(U/P) > EPSILONU) ? (1.0/3.0)*U+(2.0/3.0)*UMed2+(2.0/3.0)*dt*powerLawX(P, UMed2) : 0.)
+    V = ((P > DRY && fabs(V/P) > EPSILONU) ? (1.0/3.0)*V+(2.0/3.0)*VMed2+(2.0/3.0)*dt*powerLawY(P, VMed2) : 0.)
+    P = (P > DRY ? P : 0.)
+    }
+
+    AdvectionParams {
+        # gradient = gfs_center_sweby_gradient
+        cfl = 0.22
+        }
+
+    Refine MAXLEVEL
+     # Refine ((y>1.5)&&(y<3.5)&&(x>1.0)&&(x<4.0) ? 9 : 5)
+    #  AdaptGradient { istart = 1 istep = 1} {
+    #    cmax = 0.18e-3
+    #    cfactor = 2
+    #    # cfactor = 4
+    #    maxlevel = MAXLEVEL
+    #    minlevel = MINLEVEL
+    # } P
+
+     # AdaptError { istart = 1 istep = 1 } { cmax = 3.0e-5 maxlevel = MAXLEVEL minlevel = MINLEVEL } P
+      
+      #(P < DRY ? 0. : P + Zb)
+
+    OutputTime { istep = 10 } stderr
+    # OutputSimulation { istep = 10 } stdout
+    OutputSimulation { step = 1.0 } snapshot-%g.gfs
+
+    # OutputSimulation { step = 0.5 } snapshotText-%g.txt {
+    #     format = text
+    # }
+    
+    OutputSolidForce { istep = 10 } f
+
+    OutputLocation { step = 1.00 } slice-%g gaugeLoc
+
+    OutputLocation { istep = 10 } Rmax 62.5275 42.0 0.0
+
+} {
+scheme = hllcPowerLaw
+}
+GfsBox {
+left = Boundary {
+    BcDirichlet P NORMALDEPTH
+    BcDirichlet U NORMALDEPTH*NORMALVELOCITY
+    BcDirichlet V 0.0
+}
+top = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+bottom = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+GfsBox {
+right = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+top = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+bottom = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+1 2 right
