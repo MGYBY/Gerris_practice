@@ -1,0 +1,252 @@
+# Title: The square and circular cylinder impacted by the normal flow
+#
+# Description:
+#
+
+# below this depth the flow is considered "dry"
+Define DRY 1e-5
+Define GRAVITYCOEFF 9.81
+Define NORMALDEPTH 0.00798
+Define FROUDENUM 0.20
+Define CF 0.007582
+Define CHANNELSLOPE (CF)/2.0*pow(FROUDENUM,2.0)
+Define CHANNELSLOPENORMAL (pow((1.0-pow(CHANNELSLOPE,2.0)),0.50))
+Define NORMALVELOCITY (FROUDENUM*pow((GRAVITYCOEFF*NORMALDEPTH),0.50))
+
+
+# mesh adaptivity parameters
+Define MAXLEVEL 9
+Define MINLEVEL 5
+
+16 24 GfsRiver GfsBox GfsGEdge {
+    x = 0.5 y = 0.5 
+} {
+
+    Time { end = 80 }
+
+    PhysicalParams { L = 3.0 g = 9.81 }
+
+    # We use a sphere knowing that in 2D the resulting object will be
+    # a cross-section of the sphere at z = 0 i.e. a cylinder of radius
+    # 0.5
+    Solid (cube(7.40, 6.00, 0., 0.6))
+    # Solid (sphere(5.30,4.50,0.0,0.3))
+    RefineSolid MAXLEVEL
+
+    Init {} {
+        # Initial normal flow
+	    P = NORMALDEPTH
+	    U = NORMALDEPTH*NORMALVELOCITY
+    }
+
+    Init { istep = 1 } {
+	# implicit quadratic bottom friction with coefficient based on normal flow
+	U = (P > DRY ? (U + GRAVITYCOEFF * CHANNELSLOPE * P * dt)/(1. + dt*0.50*CF*Velocity/P) : 0.)
+	V = (P > DRY ? V/(1. + dt*0.50*CF*Velocity/P) : 0.)
+    P = (P > DRY ? P : 0.)
+    }
+
+    AdvectionParams {
+        # gradient = gfs_center_sweby_gradient
+        cfl = 0.325
+        }
+
+    Refine MAXLEVEL
+
+    OutputTime { istep = 10 } stderr
+    # OutputSimulation { istep = 10 } stdout
+    OutputSimulation { step = 2 } snapshot-%g.gfs
+    OutputSimulation { step = 2 } snapshotText-%g.txt {
+        format = text
+    }
+    
+    OutputSolidForce { istart = 1 istep = 50 } f
+    OutputLocation { istep = 50 } Rmax 7.3992 6.0 0.0
+
+    OutputLocation { step = 1.00 } slice-%g gaugeLoc
+
+    EventList { start = 0.0 istep = 50 } {
+        OutputLocation {} centerlineSlice-%g centerlineGaugeLoc
+
+        EventScript {} {
+            python3 shock_standoff_grad.py $GfsTime
+            # sleep 3 # give a chance to catch up
+            # rm -f centerline
+        }
+
+        EventScript {} {
+            # sleep 3 # give a chance to catch up
+            rm -f centerlineSlice*
+        }
+    }
+    
+}
+# No. 1 box
+GfsBox {
+pid = 0
+left = Boundary {
+    BcDirichlet P NORMALDEPTH
+    BcDirichlet U NORMALDEPTH*NORMALVELOCITY
+    BcDirichlet V 0.0
+}
+bottom = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+# No. 2 Box
+GfsBox {
+pid = 0
+left = Boundary {
+    BcDirichlet P NORMALDEPTH
+    BcDirichlet U NORMALDEPTH*NORMALVELOCITY
+    BcDirichlet V 0.0
+}
+}
+# No. 3 Box
+GfsBox {
+pid = 0
+left = Boundary {
+    BcDirichlet P NORMALDEPTH
+    BcDirichlet U NORMALDEPTH*NORMALVELOCITY
+    BcDirichlet V 0.0
+}
+}
+# No. 4 Box
+GfsBox {
+pid = 0
+left = Boundary {
+    BcDirichlet P NORMALDEPTH
+    BcDirichlet U NORMALDEPTH*NORMALVELOCITY
+    BcDirichlet V 0.0
+}
+top = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+# No. 5 Box
+GfsBox {
+pid = 1
+bottom = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+# No. 6 Box
+GfsBox {
+pid = 1
+}
+# No. 7 Box
+GfsBox {
+pid = 1
+}
+# No. 8 Box
+GfsBox {
+pid = 1
+top = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+# No. 9 Box
+GfsBox {
+pid = 2
+bottom = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+# No. 10 Box
+GfsBox {
+pid = 2
+}
+# No. 11 Box
+GfsBox {
+pid = 2
+}
+# No. 12 Box
+GfsBox {
+pid = 2
+top = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+# No. 13 Box
+GfsBox {
+pid = 3
+bottom = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+right = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+# No. 14 Box
+GfsBox {
+pid = 3
+right = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+# No. 15 Box
+GfsBox {
+pid = 3
+right = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+# No. 16 Box
+GfsBox {
+pid = 3
+right = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+top = Boundary {
+    BcNeumann P 0.0
+    BcNeumann U 0.0
+    BcNeumann V 0.0
+}
+}
+
+1 2 top
+2 3 top
+3 4 top
+5 6 top
+6 7 top
+7 8 top
+9 10 top
+10 11 top
+11 12 top
+13 14 top
+14 15 top
+15 16 top
+1 5 right
+5 9 right
+9 13 right
+2 6 right
+6 10 right
+10 14 right
+3 7 right
+7 11 right
+11 15 right
+4 8 right
+8 12 right
+12 16 right
