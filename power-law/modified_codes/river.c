@@ -346,9 +346,9 @@ static void riemann_hllc_powerLaw (const GfsRiver * r,
     gdouble SM = ((SL*uR[H]*(uR[U] - SR) - SR*uL[H]*(uL[U] - SL))/
 		  (uR[H]*(uR[U] - SR) - uL[H]*(uL[U] - SL)));
     if (SL <= 0. && 0. <= SM)
-      f[V] = uL[V]*f[H];
+      f[V] = r->betaPowerLaw*uL[V]*f[H];
     else if (SM <= 0. && 0. <= SR)
-      f[V] = uR[V]*f[H];
+      f[V] = r->betaPowerLaw*uR[V]*f[H];
     else {
       fprintf (stderr, "L: %g %g %g R: %g %g %g\n",
 	       uL[H], uL[U], uL[V],
