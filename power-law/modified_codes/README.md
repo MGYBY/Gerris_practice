@@ -1,4 +1,3 @@
 Modified Gerris codes to add the functionality.
-TODOs:
 
-- [ ] Switch to HLLE scheme for dry bed to avoid algebric difficulty for Riemann invariant.
+Avoid the complication of the new eigenstructure by using central-upwind scheme.
