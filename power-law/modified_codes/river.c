@@ -383,7 +383,7 @@ static void riemann_kurganov_powerLaw (const GfsRiver * r,
     f[H] = (aR*qL - aL*qR + aR*aL*(uR[H] - uL[H]))/(aR - aL); // (4.5) of [1]
     f[U] = (aR*(r->betaPowerLaw*qL*uL[U] + r->g*SQUARE(uL[H])/2.) - aL*(r->betaPowerLaw*qR*uR[U] + r->g*SQUARE(uR[H])/2.) + aR*aL*(qR - qL))/(aR - aL);
     // fv = (fh > 0. ? u.y[-1] + dx*gu.y.x[-1] : u.y[] - dx*gu.y.x[])*fh;
-    // TODO: V-component flux is now a simple upwind scheme. Follow Kurganov's genuine 2D method.
+    // TODO: V-component flux is now a simple upwind scheme. Follow Kurganov's genuinely 2D method.
     f[V] = (f[H]>0 ? uL[V] : uR[V])*f[H]*(r->betaPowerLaw);
   }
   else
@@ -408,7 +408,7 @@ static void riemann_kurganov (const GfsRiver * r,
     f[H] = (aR*qL - aL*qR + aR*aL*(uR[H] - uL[H]))/(aR - aL); // (4.5) of [1]
     f[U] = (aR*(qL*uL[U] + r->g*SQUARE(uL[H])/2.) - aL*(qR*uR[U] + r->g*SQUARE(uR[H])/2.) + aR*aL*(qR - qL))/(aR - aL);
     // fv = (fh > 0. ? u.y[-1] + dx*gu.y.x[-1] : u.y[] - dx*gu.y.x[])*fh;
-    // TODO: V-component flux is now a simple upwind scheme. Follow Kurganov's genuine 2D method.
+    // TODO: V-component flux is now a simple upwind scheme. Follow Kurganov's genuinely 2D method.
     f[V] = (f[H]>0 ? uL[V] : uR[V])*f[H];
   }
   else
