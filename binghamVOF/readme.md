@@ -46,4 +46,8 @@ http://gerris.dalembert.upmc.fr/gerris/examples/examples/column.html#htoc9
 https://sourceforge.net/p/gfs/mailman/message/27056583/
 ```
 
+14. Trick to output VOF surface every certain time interval:
+```
+http://gfs.sourceforge.net/wiki/index.php/Gfsview-batch
+```
                  
