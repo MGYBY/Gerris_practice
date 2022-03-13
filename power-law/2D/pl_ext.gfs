@@ -78,6 +78,11 @@ Define MINLEVEL 6
 	U = ((P > DRY && fabs(U/P) > EPSILONU) ? (1.0/3.0)*U+(2.0/3.0)*UMed2+(2.0/3.0)*dt*powerLawX(P, UMed2, VMed2) : 0.)
     V = ((P > DRY && fabs(V/P) > EPSILONU) ? (1.0/3.0)*V+(2.0/3.0)*VMed2+(2.0/3.0)*dt*powerLawY(P, UMed2, VMed2) : 0.)
     P = (P > DRY ? P : 0.)
+    
+    # implicit method
+    # U = (P > DRY && fabs(Velocity) > EPSILONU) ? U/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
+    # V = (P > DRY && fabs(Velocity) > EPSILONU) ? V/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
+    # P = (P > DRY ? P : 0.)
     }
 
     AdvectionParams {
