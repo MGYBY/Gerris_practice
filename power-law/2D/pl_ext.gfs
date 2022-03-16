@@ -7,6 +7,7 @@
 Define DRY 0.2e-5
 Define sinTheta 0.099833
 Define cosTheta (pow((1.0-pow(sinTheta, 2.0)), 0.50))
+Define tanTheta (sinTheta/cosTheta)
 Define GRAVITYCOEFF (9.81*cosTheta)
 Define nPower 0.40
 Define betaVar (2.0*(1.0+2.0*nPower)/(2.0+3.0*nPower))
@@ -80,7 +81,7 @@ Define MINLEVEL 6
     P = (P > DRY ? P : 0.)
     
     # implicit method
-    # U = (P > DRY && fabs(Velocity) > EPSILONU) ? U/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
+    # U = (P > DRY && fabs(Velocity) > EPSILONU) ? (U+tanTheta*GRAVITYCOEFF*P)/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
     # V = (P > DRY && fabs(Velocity) > EPSILONU) ? V/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
     # P = (P > DRY ? P : 0.)
     }
