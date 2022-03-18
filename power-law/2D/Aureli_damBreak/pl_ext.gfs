@@ -129,6 +129,15 @@ Define LARGETOPO 10.0
     } (P < DRY ? 0. : P + Zb)
 
      AdaptError { istart = 1 istep = 1 } { cmax = 0.9e-3 maxlevel = MAXLEVEL minlevel = MINLEVEL } (P < DRY ? 0. : P + Zb)
+     
+     # To correctly resolve the topo
+     AdaptGradient { istart = 1 istep = 1} {
+       cmax = 1e-3
+       cfactor = 2
+       # cfactor = 4
+       maxlevel = MAXLEVEL
+       minlevel = MINLEVEL
+    } Zb
       
       #(P < DRY ? 0. : P + Zb)
 
@@ -146,8 +155,8 @@ Define LARGETOPO 10.0
 
     GModule gfsview
     OutputView { istart = 1 step = 0.008 } {
-	ppm2mpeg -s 720x510 > depth.mpg
-    } { width = 700 height = 500 } view.gfv
+	ppm2mpeg -s 850x450 > depth.mpg
+    } { width = 850 height = 450 } view1.gfv
 
 } {
 scheme = hllc
