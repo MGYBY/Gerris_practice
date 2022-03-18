@@ -55,7 +55,7 @@ Define LARGETOPO 10.0
     PhysicalParams { L = domainLength g = GRAVITYCOEFF}
 
     # Refine MAXLEVEL-2
-    Refine MAXLEVEL
+    Refine (y<domainWidth*1.10 ? MAXLEVEL : MINLEVEL)
 
     # InitMask {} (y>domainWidth)
 
