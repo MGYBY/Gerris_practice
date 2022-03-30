@@ -42,7 +42,7 @@ struct _GfsTime {
 };
 
 struct _GfsPhysicalParams {
-  gdouble L, g, betaCoeff;
+  gdouble L, g, betaCoeff, slopeBoolean;
   GfsFunction * alpha;
 };
 
