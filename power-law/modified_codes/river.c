@@ -287,9 +287,11 @@ static gdouble max (gdouble a, gdouble b)
  * Fills @f by solving an approximate Riemann problem using the HLLC
  * scheme. See e.g. Liang, Borthwick, Stelling, IJNMF, 2004.
  */
+// CHANGE due to slope coordinate
+// TODO: integrate the slope coordinate feature
 static void riemann_hllc (const GfsRiver * r,
 			  const gdouble * uL, const gdouble * uR,
-			  gdouble * f)
+			  gdouble * f, FttCellFace * face)
 {
   gdouble cL = sqrt (r->g*uL[H]), cR = sqrt (r->g*uR[H]);
   gdouble ustar = (uL[U] + uR[U])/2. + cL - cR;
@@ -326,7 +328,7 @@ static void riemann_hllc (const GfsRiver * r,
 // an incorrect Riemann solver
 static void riemann_hllc_powerLaw (const GfsRiver * r,
 			  const gdouble * uL, const gdouble * uR,
-			  gdouble * f)
+			  gdouble * f, FttCellFace * face)
 {
   gdouble cL = sqrt (r->g*uL[H]+uL[H]*uL[H]*(r->betaPowerLaw*r->betaPowerLaw-r->betaPowerLaw)), cR = sqrt (r->g*uR[H]+uR[H]*uR[H]*(r->betaPowerLaw*r->betaPowerLaw-r->betaPowerLaw));
   gdouble ustar = r->betaPowerLaw*(uL[U] + uR[U])/2. + cL - cR;
@@ -364,10 +366,11 @@ static void riemann_hllc_powerLaw (const GfsRiver * r,
 }
 
 #define SQUARE(l) (pow(l, 2.0))
-
+// CHANGE due to slope coordinate
+// TODO: integrate the slope coordinate feature
 static void riemann_kurganov_powerLaw (const GfsRiver * r,
 			  const gdouble * uL, const gdouble * uR,
-			  gdouble * f)
+			  gdouble * f, FttCellFace * face)
 {
   gdouble cR = sqrt(r->g*uR[H]+SQUARE(uR[U])*(r->betaPowerLaw*r->betaPowerLaw-r->betaPowerLaw));
   gdouble cL = sqrt(r->g*uL[H]+SQUARE(uL[U])*(r->betaPowerLaw*r->betaPowerLaw-r->betaPowerLaw));
@@ -390,9 +393,11 @@ static void riemann_kurganov_powerLaw (const GfsRiver * r,
     f[H] = f[U] = f[V] = 0.;
 }
 
+// CHANGE due to slope coordinate
+// TODO: not entirely right for the eigenvalues
 static void riemann_kurganov (const GfsRiver * r,
 			  const gdouble * uL, const gdouble * uR,
-			  gdouble * f)
+			  gdouble * f, FttCellFace * face)
 {
   gdouble cR = sqrt(r->g*uR[H]);
   gdouble cL = sqrt(r->g*uL[H]);
@@ -405,11 +410,21 @@ static void riemann_kurganov (const GfsRiver * r,
   gdouble a = max(aR, -aL);
   gdouble epsilon = 1e-30;
   if (a > epsilon) {
-    f[H] = (aR*qL - aL*qR + aR*aL*(uR[H] - uL[H]))/(aR - aL); // (4.5) of [1]
+    // add this dummy test to distinguish X- and Y- sweep
+    switch (face->d/2) {
+    case FTT_X:
+    {f[H] = (aR*qL - aL*qR + aR*aL*(uR[H] - uL[H]))/(aR - aL); // (4.5) of [1]
     f[U] = (aR*(qL*uL[U] + r->g*SQUARE(uL[H])/2.) - aL*(qR*uR[U] + r->g*SQUARE(uR[H])/2.) + aR*aL*(qR - qL))/(aR - aL);
     // fv = (fh > 0. ? u.y[-1] + dx*gu.y.x[-1] : u.y[] - dx*gu.y.x[])*fh;
     // TODO: V-component flux is now a simple upwind scheme. Follow Kurganov's genuinely 2D method.
-    f[V] = (f[H]>0 ? uL[V] : uR[V])*f[H];
+    f[V] = (f[H]>0 ? uL[V] : uR[V])*f[H];}
+    case FTT_Y:
+    {f[H] = (aR*qL - aL*qR + aR*aL*(uR[H] - uL[H]))/(aR - aL); // (4.5) of [1]
+    f[U] = (aR*(qL*uL[U] + r->g*SQUARE(uL[H])/2.) - aL*(qR*uR[U] + r->g*SQUARE(uR[H])/2.) + aR*aL*(qR - qL))/(aR - aL);
+    // fv = (fh > 0. ? u.y[-1] + dx*gu.y.x[-1] : u.y[] - dx*gu.y.x[])*fh;
+    // TODO: V-component flux is now a simple upwind scheme. Follow Kurganov's genuinely 2D method.
+    f[V] = (f[H]>0 ? uL[V] : uR[V])*f[H];}
+    }
   }
   else
     f[H] = f[U] = f[V] = 0.;
@@ -637,7 +652,9 @@ static void face_fluxes (FttCellFace * face, GfsRiver * r)
 
   /* Riemann solver */
   gdouble * f = r->f;
-  (* r->scheme) (r, uL, uR, f);
+//   (* r->scheme) (r, uL, uR, f);
+// CHANGE due to slope coordinate
+  (* r->scheme) (r, uL, uR, f, face);
 
   gdouble dt = gfs_domain_face_fraction (GFS_DOMAIN (r), face)*r->dt/h;
   GFS_VALUE (face->cell, r->flux[H]) -= dt*f[H];
