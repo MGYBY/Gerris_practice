@@ -64,6 +64,7 @@ struct _GfsRiver {
   int l, nlayers, nvar, nt;
   gdouble g, dt;
   gdouble betaPowerLaw;
+  gdouble slopeCoord;
   GfsCenterGradient gradient;
   guint time_order;
   gdouble dry;
