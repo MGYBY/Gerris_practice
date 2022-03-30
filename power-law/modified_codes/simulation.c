@@ -1674,6 +1674,7 @@ void gfs_physical_params_init (GfsPhysicalParams * p)
   g_return_if_fail (p != NULL);
   
   p->g = p->L = p->betaCoeff = 1.;
+  p->slopeBoolean = 0.0;
   p->alpha = NULL;
 }
 
@@ -1738,6 +1739,13 @@ void gfs_physical_params_read (GfsPhysicalParams * p, GfsDomain * domain, GtsFil
       }
       else if (!strcmp (id, "betaCoeff")) {
 	p->betaCoeff = gfs_read_constant (fp, domain);
+	if (fp->type == GTS_ERROR) {
+	  g_free (id);
+	  return;
+	}
+      }
+      else if (!strcmp (id, "slopeBoolean")) {
+	p->slopeBoolean = gfs_read_constant (fp, domain);
 	if (fp->type == GTS_ERROR) {
 	  g_free (id);
 	  return;
