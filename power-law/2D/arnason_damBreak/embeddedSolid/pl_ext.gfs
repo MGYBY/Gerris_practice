@@ -1,0 +1,191 @@
+# Title: The square and circular cylinder impacted by the normal flow
+#
+# Description:
+#
+
+# below this depth the flow is considered "dry"
+Define DRY 0.1e-5
+Define sinTheta 0.0
+Define cosTheta (pow((1.0-pow(sinTheta, 2.0)), 0.50))
+Define GRAVITYCOEFF (9.81*cosTheta)
+Define nPower 0.01
+Define betaVar (2.0*(1.0+2.0*nPower)/(2.0+3.0*nPower))
+Define muN 71.30
+Define rhoMud 1664.0
+Define NMANNING 0.025
+
+
+Define domainLength 16.60
+Define domainWidth 0.60
+
+
+Define EPSILONU 1e-5
+
+# mesh adaptivity parameters
+Define MAXLEVEL 12
+Define MINLEVEL 7
+Define MININITLEVEL 4
+
+Define LARGETOPO 15.0
+
+Define BLOCKWIDTH 0.12
+
+1 0 GfsRiver GfsBox GfsGEdge {
+    # x = 0.5 y = 0.5
+} {
+
+    # define the source terms
+    Global {
+        // x-source
+        static double powerLawX(double h, double qx, double qy) {
+            double vel=pow((pow(qx, 2.0)+pow(qy, 2.0)), 0.50)/h;
+            // return (GRAVITYCOEFF*h*(sinTheta/cosTheta)+(-1.0)*(muN/rhoMud)*(qx/h)/vel*(pow((((1.0+2.0*nPower)/nPower)*vel/h), nPower)));
+            return (GRAVITYCOEFF*h*(sinTheta/cosTheta)+(-1.0)*GRAVITYCOEFF*pow(NMANNING,2.0)*(qx/h)*vel/(pow(h,1.0/3.0)));
+        }
+
+        // y-source
+        static double powerLawY(double h, double qx, double qy) {
+            double vel=pow((pow(qx, 2.0)+pow(qy, 2.0)), 0.50)/h;
+            // return ((-1.0)*(muN/rhoMud)*(qy/h)/vel*(pow((((1.0+2.0*nPower)/nPower)*vel/h), nPower)));
+            return ((-1.0)*GRAVITYCOEFF*pow(NMANNING,2.0)*(qy/h)*vel/(pow(h,1.0/3.0)));
+        }
+    }
+
+    Time { end = 20.0 }
+
+    PhysicalParams { L = domainLength g = GRAVITYCOEFF}
+
+    # Refine 8
+    # this works, but slightly increase computational cost.
+    Refine (fabs(y)<(domainLength/15.0) ? (MAXLEVEL-4) : MININITLEVEL)
+    Refine (fabs(y)<(domainWidth*1.10/2.0) ? (MAXLEVEL) : MININITLEVEL)
+
+    # InitMask {} (y>domainWidth)
+
+    # We use a sphere knowing that in 2D the resulting object will be
+    # a cross-section of the sphere at z = 0 i.e. a cylinder of radius
+    # 0.5
+    Solid (cube(2.80, 0.0 ,0.0 , BLOCKWIDTH))
+    # Solid (sphere((XB+width/2.0), boxLength/2.0 ,0.0 , width/2.0))
+    Solid ({
+        double leftSide = (-1.05)*domainLength/2.0;
+        double rightSide = (1.05)*domainLength/2.0;
+        double topSide = (-1.0)*domainWidth/2.0;
+        double bottomSide = (-1.05)*domainLength/2.0;
+        double line1 = leftSide-x;
+	    double line2 = x-rightSide;
+        double line3 = bottomSide-y;
+        double line4 = y-topSide;
+        return intersection (intersection (intersection (line1, line2), line3), line4);
+    })
+
+    Solid ({
+        double leftSide = (-1.05)*domainLength/2.0;
+        double rightSide = (1.05)*domainLength/2.0;
+        double topSide = (1.05)*domainLength/2.0;
+        double bottomSide = (1.0)*domainWidth/2.0;
+        double line1 = leftSide-x;
+	    double line2 = x-rightSide;
+        double line3 = bottomSide-y;
+        double line4 = y-topSide;
+        return intersection (intersection (intersection (line1, line2), line3), line4);
+    })
+    RefineSolid MAXLEVEL
+
+    Init {} {
+        # Initial dam-break set-ups
+	    U = 0.0
+	    V = 0.0
+	    # first start with no walls
+	    # use topo to mask domain
+	    # Zb = fabs(y)>(domainWidth/2.0) ? LARGETOPO : 0.0
+	    Zb = 0.0
+	    P = {
+	    double p = ((x+domainLength/2.0)<5.90 && fabs(y)<(domainWidth/2.0)) ? 0.25 : 0.02;
+	    return MAX (0., p - Zb);
+	    }
+    }
+
+    Init { istep = 1 } {
+
+    # # TVD RK3
+    # # follow the integration procedure suggested by E.F.Toro
+    # # first stage
+    # UMed1 = ((P > DRY) ? U + dt * powerLawX(P, U, V) : 0.)
+    # VMed1 = ((P > DRY) ? V + dt * powerLawY(P, U, V) : 0.)
+    #
+	# # second stage
+	# UMed2 = ((P > DRY) ? (3.0/4.0)*U + (1.0/4.0)*UMed1 + (1.0/4.0)*dt*powerLawX(P, UMed1, VMed1) : 0.)
+	# VMed2 = ((P > DRY) ? (3.0/4.0)*V + (1.0/4.0)*VMed1 + (1.0/4.0)*dt*powerLawY(P, UMed1, VMed1) : 0.)
+    #
+	# # third stage
+	# U = ((P > DRY) ? (1.0/3.0)*U+(2.0/3.0)*UMed2+(2.0/3.0)*dt*powerLawX(P, UMed2, VMed2) : 0.)
+    # V = ((P > DRY) ? (1.0/3.0)*V+(2.0/3.0)*VMed2+(2.0/3.0)*dt*powerLawY(P, UMed2, VMed2) : 0.)
+    # P = (P > DRY ? P : 0.)
+
+    # Implicit method to lift time-step restriction
+    U = (P > DRY) ? (U/(1.0+dt*GRAVITYCOEFF*pow(NMANNING,2.0)*Velocity/pow(P,4.0/3.0))) : 0.0;
+    V = (P > DRY) ? (V/(1.0+dt*GRAVITYCOEFF*pow(NMANNING,2.0)*Velocity/pow(P,4.0/3.0))) : 0.0;
+    P = (P > DRY ? P : 0.)
+    }
+
+    AdvectionParams {
+        # gradient = gfs_center_sweby_gradient
+        cfl = 0.3
+        }
+
+     # Refine ((y>1.5)&&(y<3.5)&&(x>1.0)&&(x<4.0) ? 9 : 5)
+    #  AdaptGradient { istart = 1 istep = 1} {
+    #    cmax = 0.9e-4
+    #    cfactor = 2
+    #    # cfactor = 4
+    #    maxlevel = MAXLEVEL
+    #    minlevel = MINLEVEL
+    # } ((P < DRY && fabs(y)>(domainWidth*1.05/2.0)) ? 0. : P + Zb)
+    # } (P > DRY && fabs(y)<(domainWidth*1.05/2.0))
+
+   # AdaptError { istart = 1 istep = 1 } { cmax = 1.5e-3 maxlevel = MAXLEVEL minlevel = MINLEVEL } ((P < DRY && fabs(y)>(domainWidth*1.05/2.0)) ? 0. : P + Zb)
+   # AdaptError { istart = 1 istep = 1 } { cmax = 1.75e-3 maxlevel = MAXLEVEL minlevel = MINLEVEL } (P > DRY && fabs(y)<(domainWidth*1.05/2.0))
+     
+     # To correctly resolve the topo
+   #  AdaptGradient { istart = 1 istep = 1} {
+   #    cmax = 1e-3
+   #    cfactor = 2
+   #    # cfactor = 4
+   #    maxlevel = MAXLEVEL
+   #    minlevel = MINLEVEL
+   # } ((P < DRY && fabs(y)>(domainWidth*1.05/2.0)) ? 0. : Zb)
+   # } (P > DRY && fabs(y)<(domainWidth*1.05/2.0))
+      
+      #(P < DRY ? 0. : P + Zb)
+
+    OutputTime { istep = 10 } stderr
+    # OutputSimulation { istep = 10 } stdout
+    OutputSimulation { step = 0.50 } snapshot-%g.gfs
+
+    #OutputSimulation { step = 0.5 } snapshotText-%g.txt {
+    #    format = text
+    #}
+    
+    OutputSolidForce { istep = 1 } f
+
+    # OutputLocation { istep = 10 } Rmax 0.763 0.872 0.0
+
+    EventBalance { istep = 10 } 0.125
+    OutputBalance { istep = 20 } balance
+
+    # GModule gfsview
+    # OutputView { istart = 1 step = 0.008 } {
+	# ppm2mpeg -s 850x450 > depth.mpg
+    # } { width = 850 height = 450 } view1.gfv
+
+} {
+scheme = hllc
+}
+
+GfsBox {
+left = Boundary
+top = Boundary
+bottom = Boundary
+right = Boundary
+}
