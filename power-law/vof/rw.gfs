@@ -28,12 +28,12 @@ Define MAXLEVEL 9
 Define MINLEVEL 1
 
 # max run-time
-Define TMAX = 15.0
-Define TOUTPUT = 0.05
-Define TSNAP = 2.0
+Define TMAX 15.0
+Define TOUTPUT 0.05
+Define TSNAP 2.0
 
 # mesh adaptivity parameters
-Define UEMAX = 0.01
+Define UEMAX 0.01
 
 # Bingham rheology model
 Define MUREF 0.001
