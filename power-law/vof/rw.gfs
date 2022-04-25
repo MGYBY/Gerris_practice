@@ -170,7 +170,7 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
     # # (T > 0 && T < 1)
     # # T
     
-    # AMR to refine boundary-layer
+    # AMR to resolve boundary-layer
     AdaptFunction { istep = 1 } {
 	cmax = 0
     cfactor = 2
