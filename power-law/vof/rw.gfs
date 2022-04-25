@@ -169,6 +169,14 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
     # } (T > 0 && T < 1)
     # # (T > 0 && T < 1)
     # # T
+    
+    # AMR to refine boundary-layer
+    AdaptFunction { istep = 1 } {
+	cmax = 0
+    cfactor = 2
+	maxlevel = (y<(4.0*LBOX/pow(2,MAXLEVEL))) ? MAXLEVEL : (MAXLEVEL-3)
+    # minlevel = MINLEVEL
+    } T
 
     # AdaptError { istep = 1 } { cmax = 0.01 maxlevel = MAXLEVEL } U
     # AdaptError { istep = 1 } { cmax = 1e-2 maxlevel = max_level } V
