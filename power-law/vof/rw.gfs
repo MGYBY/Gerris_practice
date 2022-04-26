@@ -191,6 +191,7 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
     OutputTime { istep = 10 } stderr
     OutputProjectionStats { istep = 10 } stderr
     OutputDiffusionStats { istep = 10 } stderr
+    OutputTime { istep = 10 } ./time-stats.txt
 
     # remove ejected droplets (just in case)
     # don't know whether this would help. mass conservation problem?
@@ -198,6 +199,7 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
 
     OutputSimulation { step = 0.03 } snapshot-%g.gfs { variables = T,U,V }
     OutputSimulation { step = 0.08 } dump-%g.gfs
+    # VTK & Tecplot output does not work for parallelism!
     OutputSimulation { step = 0.08 } snapshotVTK-%g.vtk { variables = T,U,V format = VTK}
     # OutputSimulation { step = 0.5 } snapshotText-%g.txt {
     #     format = text
