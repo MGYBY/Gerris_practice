@@ -1,0 +1,197 @@
+# Title: 2D VOF laminar sheet flow roll wave simulation
+#
+# Description:
+# Normal flow: H = 0.0020933486m; U = 0.214942405m/s; So=0.040.
+
+# Domain extent
+# follow Liu & Mei's choice, periodic BC
+# Normal Flow
+Define NORMALDEPTH 0.0020933486
+Define GRAVITYCOEFF 9.81
+Define FR 1.50
+Define NORMALVEL 0.214942405
+Define CHANNELSIN 0.015
+Define CHANNELCOS (pow((1.0-pow(CHANNELSIN,2.0)),0.50))
+Define POWERLAWN 1.00
+
+Define LDOMAIN (NORMALDEPTH*4.0/3.0)
+
+# Maximum refinement: guarantee more than 24 cell through normal depth
+Define LEVEL 5
+
+Define DISTAmp 0.0
+
+# Bingham rheology model
+Define MUREF 0.001
+Define MUDRHO 1000.0
+
+Define AIRRHO 1.12
+Define AIRVIS (MUREF/50.0)
+
+#surface tension coefficient
+Define STSIGMA 0.072
+
+Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LDOMAIN/2.0)/LDOMAIN)))
+
+# Define INITLENGTH (LBOX/32.0)
+
+1 1 GfsSimulation GfsBox GfsGEdge {
+    # shift origin of the domain
+    x = 0.5 y = 0.5
+	# y = 0.5
+} {
+    Global {
+    double velDist (double x, double y, double hn, double un, double Lx, double amp) {
+        // double hDist = hn*(1.0+amp*sin(2.0*M_PI*x/Lx));
+        if (y<HDIST(x)) {
+            return ((1.0+2.0*POWERLAWN)/(1.0+POWERLAWN)*(hn*un/HDIST(x))*(1.0-pow((1.0-y/HDIST(x)), (1.0+POWERLAWN)/POWERLAWN)));
+        }
+        else return 0.0;
+    }
+
+    double heightDist (double x,  double hn, double Lx, double amp) {
+        return (HDIST(x));
+    }
+
+    double hydroPressureDist(double y, double x, double Lx, double amp, double hn, double rhoFluid) {
+        double gy = GRAVITYCOEFF*CHANNELCOS;
+        // double hDist = hn*(1.0+amp*sin(2.0*M_PI*x/Lx));
+        if (y<HDIST(x)) return (rhoFluid*gy*y);
+        else return 0.0;
+    }
+
+	double var (double Tf, double min, double max) {
+	// assume filtered by default
+    return min + CLAMP(Tf, 0, 1)*(max - min);
+	}
+
+	double set_density (double Tf) {
+	    return var(Tf, AIRRHO, MUDRHO);
+    }
+
+	double MU (double fm, double d2) {
+	    double m, mu;
+	    double N=POWERLAWN;
+	    double mu_max = 60000.0;
+
+	    if (d2 > 0.)
+		m = MUREF*exp ((N - 1.)*log (d2));
+	    else {
+		    if (N < 1.) m = mu_max;
+		    else m = N == 1. ? MUREF : 0.;
+		}
+		mu = MIN (m, mu_max);
+
+		// harmonic mean
+		// return 1.0/((1.0-fm)/AIRVIS+fm/mu);
+		// algebraic mean
+		return AIRVIS + CLAMP(fm, 0, 1)*(mu - AIRVIS);
+    }
+    }
+
+    PhysicalParams { L = LDOMAIN }
+
+    Time { end = 25.0 dtmax = 2e-3 }
+    
+    AdvectionParams { cfl = 0.455 }
+
+    # We need to tune the solver
+    # do not tune solver for now
+    # ApproxProjectionParams { tolerance = 1e-4 nitermax = 175 nitermin = 6}
+    # ProjectionParams { tolerance = 1e-4  nitermax = 175 nitermin = 6}
+
+    # VOF tracer and interface positions
+    VariableTracerVOF T
+
+    VariablePosition X T x
+    VariablePosition Y T y
+
+    # note that the filter would greatly improve convergence for large density and viscosity ratio
+    # Basilisk code use 2 times filter by default
+    # VariableFiltered Tf T 1
+    VariableFiltered Tf T 2
+    # VariableFiltered Tf T 3
+    PhysicalParams { alpha = 1./set_density(Tf) }
+
+    # Bingham rheology viscosity
+    SourceViscosity {} {
+        double muVal = (MU(Tf,D2));
+        return muVal;
+    }  {
+	beta = 1
+	tolerance = 0.2e-5
+	# beta = 0.5
+	# nitermin = 5
+	# nitermax = 125
+    }
+
+    # BAsed on unfiltered
+    # VariableCurvature K T
+    # SourceTension T STSIGMA K
+
+    # initial conditions
+    Refine LEVEL
+    InitFraction T (heightDist(x,NORMALDEPTH,LDOMAIN,DISTAmp)-y)
+    Init {} {
+        # Initial normal flow
+	# U = velDist(x, y, NORMALDEPTH, NORMALVEL, LDOMAIN, DISTAmp)
+    U = 0.0
+    V = 0.0
+    P = hydroPressureDist(y,x,LDOMAIN,DISTAmp,NORMALDEPTH,MUDRHO)
+    }
+
+    # no mesh adaptivity
+    # AdaptGradient { istep = 1 } {
+	# cmax = 0.0
+    # # cmax = 1e-2
+	# maxlevel = MAXLEVEL
+    # minlevel = MINLEVEL
+    # } T
+
+    # helpful for wave front resolution
+    # AdaptVorticity { istep = 1 } { cmax = 0.09 maxlevel = MAXLEVEL minlevel = MINLEVEL}
+
+    # gravity
+    Source V (-1.0)*GRAVITYCOEFF*CHANNELCOS
+    Source U GRAVITYCOEFF*CHANNELSIN
+
+    OutputTime { istep = 10 } stderr
+    OutputProjectionStats { istep = 10 } stderr
+    OutputDiffusionStats { istep = 10 } stderr
+
+    # remove ejected droplets (just in case)
+    # don't know whether this would help. mass conservation problem?
+    # RemoveDroplets { istep = 1 } T -3
+
+    OutputSimulation { step = 1.0 } snapshot-%g.gfs { variables = T,U,V }
+    OutputSimulation { step = 4.0 } dump-%g.gfs
+    # OutputSimulation { step = 0.1 } snapshotVTK-%g.vtk { variables = T,U,V format = VTK}
+    # OutputSimulation { step = 0.5 } snapshotText-%g.txt {
+    #     format = text
+    # }
+
+    # OutputLocation { istep = 1 } { awk -f distance.awk > probe1 } gaugeLoc { interpolate = 0 }
+    # OutputLocation { step = 0.1 } slice-%g gaugeLoc # { interpolate = 0 }
+
+    OutputLocation { step = 1 } centerSlice-%g centerlineGaugeLoc
+
+    # GModule gfsview
+    # OutputView { istep = 50 } {
+	# ppm2mpeg -s 1050x600 > depth.mpg
+    # } { width = 1600 height = 400 } view.gfv
+
+    # OutputDropletSums { istep = 1 } drops.txt  { v = T*dV   } T
+}
+GfsBox {
+    pid = 0
+    top = Boundary {
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
+	BcDirichlet P 0.0
+	BcNeumann V 0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+1 1 right
