@@ -50,4 +50,8 @@ https://sourceforge.net/p/gfs/mailman/message/27056583/
 ```
 http://gfs.sourceforge.net/wiki/index.php/Gfsview-batch
 ```
-                 
+
+15. "Comet droplet" treatment:
+```
+https://groups.google.com/g/basilisk-fr/c/HO_u2ErNhO0/m/3w42XrajAAAJ
+```
