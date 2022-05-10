@@ -1,0 +1,811 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     27644,        803]
+NotebookOptionsPosition[     25402,        754]
+NotebookOutlinePosition[     25775,        770]
+CellTagsIndexPosition[     25732,        767]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{"fEqn", " ", "=", " ", 
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     RowBox[{
+      RowBox[{"-", 
+       RowBox[{"(", 
+        RowBox[{"\[Beta]", "-", "1"}], ")"}]}], 
+      SuperscriptBox["hc", 
+       FractionBox[
+        RowBox[{"2", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", 
+           RowBox[{"2", "n"}]}], ")"}]}], "n"]]}], "+", 
+     RowBox[{"\[Beta]", " ", 
+      SuperscriptBox["hc", 
+       FractionBox[
+        RowBox[{"2", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", "n"}], ")"}]}], "n"]]}], "+", 
+     RowBox[{"2", 
+      RowBox[{"(", 
+       RowBox[{"\[Beta]", "-", "1"}], ")"}], 
+      SuperscriptBox["hc", 
+       FractionBox[
+        RowBox[{"1", "+", 
+         RowBox[{"2", " ", "n"}]}], "n"]]}], "-", 
+     RowBox[{"2", " ", "\[Beta]", " ", 
+      SuperscriptBox["hc", 
+       FractionBox[
+        RowBox[{"1", "+", "n"}], "n"]]}], "+", "1"}], 
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{"hc", "-", "1"}], ")"}], "2"], "hc"}]], "\[Equal]", 
+   "\[Alpha]"}]}]], "Input",
+ CellChangeTimes->{{3.8612028722390313`*^9, 3.861203001564864*^9}},
+ CellLabel->"In[1]:=",ExpressionUUID->"03e95a2d-010c-4546-ba1a-5fd5abd307cd"],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   RowBox[{"1", "+", 
+    RowBox[{
+     SuperscriptBox["hc", 
+      FractionBox[
+       RowBox[{"2", " ", 
+        RowBox[{"(", 
+         RowBox[{"1", "+", 
+          RowBox[{"2", " ", "n"}]}], ")"}]}], "n"]], " ", 
+     RowBox[{"(", 
+      RowBox[{"1", "-", "\[Beta]"}], ")"}]}], "+", 
+    RowBox[{"2", " ", 
+     SuperscriptBox["hc", 
+      FractionBox[
+       RowBox[{"1", "+", 
+        RowBox[{"2", " ", "n"}]}], "n"]], " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"-", "1"}], "+", "\[Beta]"}], ")"}]}], "-", 
+    RowBox[{"2", " ", 
+     SuperscriptBox["hc", 
+      FractionBox[
+       RowBox[{"1", "+", "n"}], "n"]], " ", "\[Beta]"}], "+", 
+    RowBox[{
+     SuperscriptBox["hc", 
+      FractionBox[
+       RowBox[{"2", " ", 
+        RowBox[{"(", 
+         RowBox[{"1", "+", "n"}], ")"}]}], "n"]], " ", "\[Beta]"}]}], 
+   RowBox[{
+    SuperscriptBox[
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"-", "1"}], "+", "hc"}], ")"}], "2"], " ", "hc"}]], "\[Equal]",
+   "\[Alpha]"}]], "Output",
+ CellChangeTimes->{3.8612030030023627`*^9},
+ CellLabel->"Out[1]=",ExpressionUUID->"759d6cff-816f-4945-a158-0c597e003087"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"fEqnVal", " ", "=", " ", 
+   RowBox[{"fEqn", "/.", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"\[Beta]", "\[Rule]", 
+       FractionBox[
+        RowBox[{"2", " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", 
+           RowBox[{"2", "*", "1"}]}], ")"}]}], 
+        RowBox[{"2", "+", 
+         RowBox[{"3", "*", "1"}]}]]}], ",", " ", 
+      RowBox[{"\[Alpha]", "\[Rule]", 
+       RowBox[{"(", 
+        RowBox[{"1", "/", 
+         RowBox[{
+          StyleBox[
+           RowBox[{
+            StyleBox["0.",
+             FontFamily->"Consolas",
+             FontWeight->"Bold",
+             FontColor->RGBColor[1., 0., 0.]], 
+            StyleBox[
+             StyleBox[
+              StyleBox[
+               StyleBox[
+                StyleBox[
+                 StyleBox[
+                  StyleBox[
+                   StyleBox["7",
+                    FontFamily->"Consolas",
+                    FontWeight->"Bold",
+                    FontColor->RGBColor[1., 0., 0.]],
+                   FontFamily->"Consolas",
+                   FontWeight->"Bold",
+                   FontColor->RGBColor[1., 0., 0.]],
+                  FontFamily->"Consolas",
+                  FontWeight->"Bold",
+                  FontColor->RGBColor[1., 0., 0.]],
+                 FontFamily->"Consolas",
+                 FontWeight->"Bold",
+                 FontColor->RGBColor[1., 0., 0.]],
+                FontFamily->"Consolas",
+                FontWeight->"Bold",
+                FontColor->RGBColor[1., 0., 0.]],
+               FontFamily->"Consolas",
+               FontWeight->"Bold",
+               FontColor->RGBColor[1., 0., 0.]],
+              FontFamily->"Consolas",
+              FontWeight->"Bold",
+              FontColor->RGBColor[1., 0., 0.]],
+             FontFamily->"Consolas",
+             FontWeight->"Bold",
+             FontColor->RGBColor[1., 0., 0.]]}]], "^", "2"}]}], ")"}]}], ",", 
+      " ", 
+      RowBox[{"n", "\[Rule]", "1.0"}]}], "}"}]}]}],
+  FontFamily->"Consolas",
+  FontWeight->"Bold",
+  FontColor->RGBColor[1., 0., 0.]]], "Input",
+ CellChangeTimes->{{3.861203010502365*^9, 3.8612030270210714`*^9}, {
+   3.8612030599908543`*^9, 3.861203084864064*^9}, {3.86120314001882*^9, 
+   3.8612031425656953`*^9}, {3.86120628943968*^9, 3.8612062962680264`*^9}, 
+   3.8612064164551053`*^9, 3.8612065455032363`*^9, 3.8612068890355606`*^9, {
+   3.861207013332616*^9, 3.861207013629412*^9}, 3.8612071093939514`*^9, {
+   3.861207198312135*^9, 3.8612071988590136`*^9}},
+ CellLabel->"In[51]:=",ExpressionUUID->"40d7777c-a42a-4575-92dd-2c1cd7b83e46"],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   RowBox[{"1", "-", 
+    FractionBox[
+     RowBox[{"12", " ", 
+      SuperscriptBox["hc", "2.`"]}], "5"], "+", 
+    FractionBox[
+     RowBox[{"2", " ", 
+      SuperscriptBox["hc", "3.`"]}], "5"], "+", 
+    FractionBox[
+     RowBox[{"6", " ", 
+      SuperscriptBox["hc", "4.`"]}], "5"], "-", 
+    FractionBox[
+     SuperscriptBox["hc", "6.`"], "5"]}], 
+   RowBox[{
+    SuperscriptBox[
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"-", "1"}], "+", "hc"}], ")"}], "2"], " ", "hc"}]], "\[Equal]",
+   "2.0408163265306127`"}]], "Output",
+ CellChangeTimes->{3.861203088551553*^9, 3.8612031430500507`*^9, 
+  3.86120629828341*^9, 3.8612064186736217`*^9, 3.8612065478672943`*^9, 
+  3.8612068566949577`*^9, 3.8612068909574366`*^9, 3.8612070158011556`*^9, 
+  3.861207110612647*^9, 3.8612072000309143`*^9},
+ CellLabel->"Out[51]=",ExpressionUUID->"32d72869-f683-4e07-81f2-4b9b26a6652f"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"NSolve", "[", 
+   RowBox[{"fEqnVal", ",", " ", "hc"}], "]"}],
+  FontFamily->"Consolas",
+  FontWeight->"Bold",
+  FontColor->RGBColor[1., 0., 0.]]], "Input",
+ CellChangeTimes->{{3.8612030907541065`*^9, 3.861203126252668*^9}},
+ CellLabel->"In[52]:=",ExpressionUUID->"49208354-de90-4c4e-9835-d5d1e262dc1f"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"hc", "\[Rule]", 
+     RowBox[{"-", "3.1383805010313774`"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"hc", "\[Rule]", "1.479295246732317`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"hc", "\[Rule]", 
+     RowBox[{
+      RowBox[{"-", "0.17045737285047322`"}], "-", 
+      RowBox[{"1.0236840401649618`", " ", "\[ImaginaryI]"}]}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"hc", "\[Rule]", 
+     RowBox[{
+      RowBox[{"-", "0.17045737285047322`"}], "+", 
+      RowBox[{"1.0236840401649618`", " ", "\[ImaginaryI]"}]}]}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{{3.8612031021129484`*^9, 3.8612031451448903`*^9}, 
+   3.861206302942251*^9, 3.8612064212986183`*^9, 3.861206561933483*^9, 
+   3.861206858962942*^9, 3.861206895441812*^9, 3.8612070178323755`*^9, 
+   3.861207113159521*^9, 3.8612072020152597`*^9},
+ CellLabel->"Out[52]=",ExpressionUUID->"47f1f315-ebe6-47c5-9a44-4515bccc3844"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"qEqn", " ", "=", " ", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{"\[Beta]", "-", "1"}], ")"}], 
+    SuperscriptBox["hc", 
+     FractionBox[
+      RowBox[{"1", "+", 
+       RowBox[{"2", " ", "n"}]}], "n"]]}], "+", 
+   SqrtBox[
+    RowBox[{
+     RowBox[{"\[Beta]", " ", 
+      RowBox[{"(", 
+       RowBox[{"\[Beta]", "-", "1"}], ")"}], 
+      SuperscriptBox["hc", 
+       FractionBox[
+        RowBox[{"2", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", 
+           RowBox[{"2", " ", "n"}]}], ")"}]}], "n"]]}], "+", 
+     RowBox[{"\[Alpha]", " ", 
+      SuperscriptBox["hc", "3"]}]}]]}]}]], "Input",
+ CellChangeTimes->{{3.86120339950113*^9, 3.8612034627890854`*^9}},
+ CellLabel->"In[7]:=",ExpressionUUID->"ca2881a9-d342-41ff-a1f1-1765854f6d2e"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   SuperscriptBox["hc", 
+    FractionBox[
+     RowBox[{"1", "+", 
+      RowBox[{"2", " ", "n"}]}], "n"]], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", "1"}], "+", "\[Beta]"}], ")"}]}], "+", 
+  SqrtBox[
+   RowBox[{
+    RowBox[{
+     SuperscriptBox["hc", "3"], " ", "\[Alpha]"}], "+", 
+    RowBox[{
+     SuperscriptBox["hc", 
+      FractionBox[
+       RowBox[{"2", " ", 
+        RowBox[{"(", 
+         RowBox[{"1", "+", 
+          RowBox[{"2", " ", "n"}]}], ")"}]}], "n"]], " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"-", "1"}], "+", "\[Beta]"}], ")"}], " ", 
+     "\[Beta]"}]}]]}]], "Output",
+ CellChangeTimes->{3.86120346639847*^9},
+ CellLabel->"Out[7]=",ExpressionUUID->"cb775deb-79e7-4474-b4f1-f750da3c19c3"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"qEqnVal", " ", "=", " ", 
+   RowBox[{"qEqn", "/.", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{
+       StyleBox[
+        StyleBox[
+         StyleBox["hc",
+          FontFamily->"Consolas",
+          FontWeight->"Bold",
+          FontColor->RGBColor[1., 0., 0.]],
+         FontFamily->"Consolas",
+         FontWeight->"Bold",
+         FontColor->RGBColor[1., 0., 0.]],
+        FontFamily->"Consolas",
+        FontWeight->"Bold",
+        FontColor->RGBColor[1., 0., 0.]], 
+       StyleBox[
+        StyleBox[
+         StyleBox["\[Rule]",
+          FontFamily->"Consolas",
+          FontWeight->"Bold",
+          FontColor->RGBColor[1., 0., 0.]],
+         FontFamily->"Consolas",
+         FontWeight->"Bold",
+         FontColor->RGBColor[1., 0., 0.]],
+        FontFamily->"Consolas",
+        FontWeight->"Bold",
+        FontColor->RGBColor[1., 0., 0.]], 
+       StyleBox[
+        StyleBox[
+         StyleBox["1.479295246732317`",
+          FontFamily->"Consolas",
+          FontWeight->"Bold",
+          FontColor->RGBColor[1., 0., 0.]],
+         FontFamily->"Consolas",
+         FontWeight->"Bold",
+         FontColor->RGBColor[1., 0., 0.]],
+        FontFamily->"Consolas",
+        FontWeight->"Bold",
+        FontColor->RGBColor[1., 0., 0.]]}], ",", " ", 
+      RowBox[{"\[Beta]", "\[Rule]", 
+       FractionBox[
+        RowBox[{"2", " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", 
+           RowBox[{"2", "*", "1"}]}], ")"}]}], 
+        RowBox[{"2", "+", 
+         RowBox[{"3", "*", "1"}]}]]}], ",", " ", 
+      RowBox[{"\[Alpha]", "\[Rule]", 
+       RowBox[{"(", 
+        RowBox[{"1", "/", 
+         RowBox[{
+          StyleBox[
+           RowBox[{
+            StyleBox["0.",
+             FontFamily->"Consolas",
+             FontWeight->"Bold",
+             FontColor->RGBColor[1., 0., 0.]], 
+            StyleBox[
+             StyleBox[
+              StyleBox[
+               StyleBox[
+                StyleBox[
+                 StyleBox[
+                  StyleBox[
+                   StyleBox["7",
+                    FontFamily->"Consolas",
+                    FontWeight->"Bold",
+                    FontColor->RGBColor[1., 0., 0.]],
+                   FontFamily->"Consolas",
+                   FontWeight->"Bold",
+                   FontColor->RGBColor[1., 0., 0.]],
+                  FontFamily->"Consolas",
+                  FontWeight->"Bold",
+                  FontColor->RGBColor[1., 0., 0.]],
+                 FontFamily->"Consolas",
+                 FontWeight->"Bold",
+                 FontColor->RGBColor[1., 0., 0.]],
+                FontFamily->"Consolas",
+                FontWeight->"Bold",
+                FontColor->RGBColor[1., 0., 0.]],
+               FontFamily->"Consolas",
+               FontWeight->"Bold",
+               FontColor->RGBColor[1., 0., 0.]],
+              FontFamily->"Consolas",
+              FontWeight->"Bold",
+              FontColor->RGBColor[1., 0., 0.]],
+             FontFamily->"Consolas",
+             FontWeight->"Bold",
+             FontColor->RGBColor[1., 0., 0.]]}]], "^", "2"}]}], ")"}]}], ",", 
+      " ", 
+      RowBox[{"n", "\[Rule]", "1.0"}]}], "}"}]}]}],
+  FontFamily->"Consolas",
+  FontWeight->"Bold",
+  FontColor->RGBColor[1., 0., 0.]]], "Input",
+ CellChangeTimes->{{3.8612034675549383`*^9, 3.861203489689105*^9}, {
+   3.8612063121305094`*^9, 3.861206316271119*^9}, {3.8612064292117443`*^9, 
+   3.8612064347841663`*^9}, {3.8612065802505255`*^9, 3.861206596986271*^9}, 
+   3.8612067712131057`*^9, {3.861206909334053*^9, 3.8612069171021457`*^9}, {
+   3.8612070240683*^9, 3.8612070276620855`*^9}, {3.8612071198629293`*^9, 
+   3.8612071222535276`*^9}, {3.861207208425211*^9, 3.8612072124720955`*^9}},
+ CellLabel->"In[53]:=",ExpressionUUID->"76a4836f-de11-4fba-baee-1cd2c3179b24"],
+
+Cell[BoxData["3.6676096737371453`"], "Output",
+ CellChangeTimes->{3.8612034910330825`*^9, 3.861206318366502*^9, 
+  3.861206435987277*^9, 3.861206600704789*^9, 3.8612067725722485`*^9, 
+  3.8612068644535136`*^9, 3.8612069182425704`*^9, 3.8612070289276075`*^9, 
+  3.8612071238500624`*^9, 3.8612072136439204`*^9},
+ CellLabel->"Out[53]=",ExpressionUUID->"d605a05f-48af-4dbb-8f2c-874142af2bfb"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"cEqn", " ", "=", " ", 
+  RowBox[{
+   SuperscriptBox["hc", 
+    FractionBox[
+     RowBox[{"1", "+", "n"}], "n"]], "+", 
+   RowBox[{"q", " ", 
+    SuperscriptBox["hc", 
+     RowBox[{"-", "1"}]]}]}]}]], "Input",
+ CellChangeTimes->{{3.861203529943637*^9, 3.8612035321678114`*^9}, {
+  3.861204057144868*^9, 3.8612040585479765`*^9}, {3.8612042306059914`*^9, 
+  3.8612042440487623`*^9}},
+ CellLabel->"In[9]:=",ExpressionUUID->"f6fc812c-b4d4-48db-97ed-7fb51c94fe72"],
+
+Cell[BoxData[
+ RowBox[{
+  SuperscriptBox["hc", 
+   FractionBox[
+    RowBox[{"1", "+", "n"}], "n"]], "+", 
+  FractionBox["q", "hc"]}]], "Output",
+ CellChangeTimes->{3.8612042450800133`*^9},
+ CellLabel->"Out[9]=",ExpressionUUID->"41280cc6-5330-4650-b1ed-b6ff837c8a08"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"cEqnVal", " ", "=", " ", 
+   RowBox[{"cEqn", "/.", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"q", "->", 
+       StyleBox[
+        StyleBox[
+         StyleBox[
+          StyleBox["3.6676096737371453`",
+           FontFamily->"Consolas",
+           FontWeight->"Bold",
+           FontColor->RGBColor[1., 0., 0.]],
+          FontFamily->"Consolas",
+          FontWeight->"Bold",
+          FontColor->RGBColor[1., 0., 0.]],
+         FontFamily->"Consolas",
+         FontWeight->"Bold",
+         FontColor->RGBColor[1., 0., 0.]],
+        FontFamily->"Consolas",
+        FontWeight->"Bold",
+        FontColor->RGBColor[1., 0., 0.]]}], ",", 
+      RowBox[{
+       StyleBox[
+        StyleBox[
+         StyleBox["hc",
+          FontFamily->"Consolas",
+          FontWeight->"Bold",
+          FontColor->RGBColor[1., 0., 0.]],
+         FontFamily->"Consolas",
+         FontWeight->"Bold",
+         FontColor->RGBColor[1., 0., 0.]],
+        FontFamily->"Consolas",
+        FontWeight->"Bold",
+        FontColor->RGBColor[1., 0., 0.]], 
+       StyleBox[
+        StyleBox[
+         StyleBox["\[Rule]",
+          FontFamily->"Consolas",
+          FontWeight->"Bold",
+          FontColor->RGBColor[1., 0., 0.]],
+         FontFamily->"Consolas",
+         FontWeight->"Bold",
+         FontColor->RGBColor[1., 0., 0.]],
+        FontFamily->"Consolas",
+        FontWeight->"Bold",
+        FontColor->RGBColor[1., 0., 0.]], 
+       StyleBox[
+        StyleBox[
+         StyleBox["1.479295246732317`",
+          FontFamily->"Consolas",
+          FontWeight->"Bold",
+          FontColor->RGBColor[1., 0., 0.]],
+         FontFamily->"Consolas",
+         FontWeight->"Bold",
+         FontColor->RGBColor[1., 0., 0.]],
+        FontFamily->"Consolas",
+        FontWeight->"Bold",
+        FontColor->RGBColor[1., 0., 0.]]}], ",", " ", 
+      RowBox[{"n", "\[Rule]", "1.0"}]}], "}"}]}]}],
+  FontFamily->"Consolas",
+  FontWeight->"Bold",
+  FontColor->RGBColor[1., 0., 0.]]], "Input",
+ CellChangeTimes->{{3.861204247694174*^9, 3.8612042829599147`*^9}, {
+   3.86120632635093*^9, 3.8612063382801037`*^9}, {3.861206458055001*^9, 
+   3.8612064671819563`*^9}, 3.861206611519663*^9, 3.861206786140498*^9, {
+   3.8612069250413656`*^9, 3.861206932494474*^9}, {3.86120703577141*^9, 
+   3.8612070483832073`*^9}, {3.8612071301938453`*^9, 3.861207137928363*^9}, {
+   3.8612072207553663`*^9, 3.861207227254981*^9}},
+ CellLabel->"In[54]:=",ExpressionUUID->"5f0b23cb-c62c-4863-af76-c2eae9f835a1"],
+
+Cell[BoxData["4.667609673737145`"], "Output",
+ CellChangeTimes->{{3.8612042779127817`*^9, 3.8612042835221815`*^9}, 
+   3.8612063395456953`*^9, 3.861206468322521*^9, 3.8612066256528864`*^9, 
+   3.861206788452944*^9, 3.8612068693753886`*^9, 3.8612069338850565`*^9, 
+   3.861207049680015*^9, 3.861207150804659*^9, 3.861207232320217*^9},
+ CellLabel->"Out[54]=",ExpressionUUID->"9fc08c5e-a1a4-40ef-9ff2-f79a64e8ceb0"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"h2Eqn", " ", "=", " ", 
+  RowBox[{
+   RowBox[{"-", 
+    RowBox[{"(", 
+     RowBox[{
+      FractionBox["h1", "2"], "+", 
+      FractionBox[
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[Beta]", "-", "1"}], ")"}], " ", 
+        SuperscriptBox["c", "2"]}], "\[Alpha]"]}], ")"}]}], "+", 
+   SqrtBox[
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{
+        FractionBox["h1", "2"], "+", 
+        FractionBox[
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Beta]", "-", "1"}], ")"}], 
+          SuperscriptBox["c", "2"]}], "\[Alpha]"]}], ")"}], "2"], "+", 
+     FractionBox[
+      RowBox[{"2", "\[Beta]", " ", 
+       SuperscriptBox["q", "2"]}], 
+      RowBox[{"\[Alpha]", " ", "h1"}]]}]]}]}]], "Input",
+ CellChangeTimes->{{3.861205120882128*^9, 3.8612052276361628`*^9}},
+ CellLabel->"In[12]:=",ExpressionUUID->"a2545eec-6663-4340-8942-9ad97480903c"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", 
+   FractionBox["h1", "2"]}], "-", 
+  FractionBox[
+   RowBox[{
+    SuperscriptBox["c", "2"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"-", "1"}], "+", "\[Beta]"}], ")"}]}], "\[Alpha]"], "+", 
+  SqrtBox[
+   RowBox[{
+    SuperscriptBox[
+     RowBox[{"(", 
+      RowBox[{
+       FractionBox["h1", "2"], "+", 
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["c", "2"], " ", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", "1"}], "+", "\[Beta]"}], ")"}]}], "\[Alpha]"]}], 
+      ")"}], "2"], "+", 
+    FractionBox[
+     RowBox[{"2", " ", 
+      SuperscriptBox["q", "2"], " ", "\[Beta]"}], 
+     RowBox[{"h1", " ", "\[Alpha]"}]]}]]}]], "Output",
+ CellChangeTimes->{3.861205252390715*^9},
+ CellLabel->"Out[12]=",ExpressionUUID->"b9947e8a-e0c5-41b3-a627-bd5de5911d23"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ StyleBox[
+  RowBox[{"h2EqnVal", " ", "=", " ", 
+   RowBox[{"h2Eqn", "/.", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"h1", "\[Rule]", "1.0"}], ",", " ", 
+      RowBox[{"c", "->", 
+       StyleBox[
+        StyleBox[
+         StyleBox[
+          StyleBox["4.667609673737145`",
+           FontFamily->"Consolas",
+           FontWeight->"Bold",
+           FontColor->RGBColor[1., 0., 0.]],
+          FontFamily->"Consolas",
+          FontWeight->"Bold",
+          FontColor->RGBColor[1., 0., 0.]],
+         FontFamily->"Consolas",
+         FontWeight->"Bold",
+         FontColor->RGBColor[1., 0., 0.]],
+        FontFamily->"Consolas",
+        FontWeight->"Bold",
+        FontColor->RGBColor[1., 0., 0.]]}], ",", " ", 
+      RowBox[{"q", "->", 
+       StyleBox[
+        StyleBox[
+         StyleBox[
+          StyleBox["3.6676096737371453`",
+           FontFamily->"Consolas",
+           FontWeight->"Bold",
+           FontColor->RGBColor[1., 0., 0.]],
+          FontFamily->"Consolas",
+          FontWeight->"Bold",
+          FontColor->RGBColor[1., 0., 0.]],
+         FontFamily->"Consolas",
+         FontWeight->"Bold",
+         FontColor->RGBColor[1., 0., 0.]],
+        FontFamily->"Consolas",
+        FontWeight->"Bold",
+        FontColor->RGBColor[1., 0., 0.]]}], ",", " ", 
+      RowBox[{"\[Beta]", "\[Rule]", 
+       FractionBox[
+        RowBox[{"2", " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", 
+           RowBox[{"2", "*", "1"}]}], ")"}]}], 
+        RowBox[{"2", "+", 
+         RowBox[{"3", "*", "1"}]}]]}], ",", " ", 
+      RowBox[{"\[Alpha]", "\[Rule]", 
+       RowBox[{"(", 
+        RowBox[{"1", "/", 
+         RowBox[{
+          StyleBox[
+           RowBox[{
+            StyleBox["0.",
+             FontFamily->"Consolas",
+             FontWeight->"Bold",
+             FontColor->RGBColor[1., 0., 0.]], 
+            StyleBox[
+             StyleBox[
+              StyleBox[
+               StyleBox[
+                StyleBox[
+                 StyleBox[
+                  StyleBox[
+                   StyleBox["7",
+                    FontFamily->"Consolas",
+                    FontWeight->"Bold",
+                    FontColor->RGBColor[1., 0., 0.]],
+                   FontFamily->"Consolas",
+                   FontWeight->"Bold",
+                   FontColor->RGBColor[1., 0., 0.]],
+                  FontFamily->"Consolas",
+                  FontWeight->"Bold",
+                  FontColor->RGBColor[1., 0., 0.]],
+                 FontFamily->"Consolas",
+                 FontWeight->"Bold",
+                 FontColor->RGBColor[1., 0., 0.]],
+                FontFamily->"Consolas",
+                FontWeight->"Bold",
+                FontColor->RGBColor[1., 0., 0.]],
+               FontFamily->"Consolas",
+               FontWeight->"Bold",
+               FontColor->RGBColor[1., 0., 0.]],
+              FontFamily->"Consolas",
+              FontWeight->"Bold",
+              FontColor->RGBColor[1., 0., 0.]],
+             FontFamily->"Consolas",
+             FontWeight->"Bold",
+             FontColor->RGBColor[1., 0., 0.]]}]], 
+          StyleBox[
+           StyleBox[
+            StyleBox[
+             StyleBox[
+              StyleBox[
+               StyleBox[
+                StyleBox["^",
+                 FontFamily->"Consolas",
+                 FontWeight->"Bold",
+                 FontColor->RGBColor[1., 0., 0.]],
+                FontFamily->"Consolas",
+                FontWeight->"Bold",
+                FontColor->RGBColor[1., 0., 0.]],
+               FontFamily->"Consolas",
+               FontWeight->"Bold",
+               FontColor->RGBColor[1., 0., 0.]],
+              FontFamily->"Consolas",
+              FontWeight->"Bold",
+              FontColor->RGBColor[1., 0., 0.]],
+             FontFamily->"Consolas",
+             FontWeight->"Bold",
+             FontColor->RGBColor[1., 0., 0.]],
+            FontFamily->"Consolas",
+            FontWeight->"Bold",
+            FontColor->RGBColor[1., 0., 0.]],
+           FontFamily->"Consolas",
+           FontWeight->"Bold",
+           FontColor->RGBColor[1., 0., 0.]], 
+          StyleBox[
+           StyleBox[
+            StyleBox[
+             StyleBox[
+              StyleBox[
+               StyleBox[
+                StyleBox["2",
+                 FontFamily->"Consolas",
+                 FontWeight->"Bold",
+                 FontColor->RGBColor[1., 0., 0.]],
+                FontFamily->"Consolas",
+                FontWeight->"Bold",
+                FontColor->RGBColor[1., 0., 0.]],
+               FontFamily->"Consolas",
+               FontWeight->"Bold",
+               FontColor->RGBColor[1., 0., 0.]],
+              FontFamily->"Consolas",
+              FontWeight->"Bold",
+              FontColor->RGBColor[1., 0., 0.]],
+             FontFamily->"Consolas",
+             FontWeight->"Bold",
+             FontColor->RGBColor[1., 0., 0.]],
+            FontFamily->"Consolas",
+            FontWeight->"Bold",
+            FontColor->RGBColor[1., 0., 0.]],
+           FontFamily->"Consolas",
+           FontWeight->"Bold",
+           FontColor->RGBColor[1., 0., 0.]]}]}], ")"}]}], ",", " ", 
+      RowBox[{"n", "\[Rule]", "1.0"}]}], "}"}]}]}],
+  FontFamily->"Consolas",
+  FontWeight->"Bold",
+  FontColor->RGBColor[1., 0., 0.]]], "Input",
+ CellChangeTimes->{{3.861205254578266*^9, 3.8612053024666233`*^9}, {
+  3.8612063618009024`*^9, 3.8612063979444437`*^9}, {3.861206494519687*^9, 
+  3.8612065045539384`*^9}, {3.8612067474750385`*^9, 3.8612067537867007`*^9}, {
+  3.8612068004705396`*^9, 3.8612068150505066`*^9}, {3.8612069800565605`*^9, 
+  3.861206998948758*^9}, {3.861207064311852*^9, 3.861207073706588*^9}, {
+  3.8612071597619104`*^9, 3.861207168184843*^9}, {3.861207240949607*^9, 
+  3.861207251137097*^9}},
+ CellLabel->"In[55]:=",ExpressionUUID->"22b8c40e-1aac-4ea8-bea3-3ae52de001e3"],
+
+Cell[BoxData["2.1359184393564434`"], "Output",
+ CellChangeTimes->{3.8612053034509897`*^9, 3.8612064005538015`*^9, 
+  3.8612065053974752`*^9, 3.861206816862802*^9, 3.861206877362157*^9, 
+  3.8612069992924957`*^9, 3.861207075222126*^9, 3.8612071723879433`*^9, 
+  3.8612072531084356`*^9},
+ CellLabel->"Out[55]=",ExpressionUUID->"a02de212-0e2a-4b0b-aa74-844739de0f51"]
+}, Open  ]]
+},
+WindowSize->{953, 833},
+WindowMargins->{{Automatic, 442}, {66, Automatic}},
+Magnification:>1.5 Inherited,
+FrontEndVersion->"12.0 for Microsoft Windows (64-bit) (April 8, 2019)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 1202, 38, 91, "Input",ExpressionUUID->"03e95a2d-010c-4546-ba1a-5fd5abd307cd"],
+Cell[1785, 62, 1167, 38, 90, "Output",ExpressionUUID->"759d6cff-816f-4945-a158-0c597e003087"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2989, 105, 2586, 67, 70, "Input",ExpressionUUID->"40d7777c-a42a-4575-92dd-2c1cd7b83e46"],
+Cell[5578, 174, 916, 25, 91, "Output",ExpressionUUID->"32d72869-f683-4e07-81f2-4b9b26a6652f"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6531, 204, 338, 8, 43, "Input",ExpressionUUID->"49208354-de90-4c4e-9835-d5d1e262dc1f"],
+Cell[6872, 214, 967, 23, 79, "Output",ExpressionUUID->"47f1f315-ebe6-47c5-9a44-4515bccc3844"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7876, 242, 782, 24, 82, "Input",ExpressionUUID->"ca2881a9-d342-41ff-a1f1-1765854f6d2e"],
+Cell[8661, 268, 766, 26, 87, "Output",ExpressionUUID->"cb775deb-79e7-4474-b4f1-f750da3c19c3"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9464, 299, 3789, 104, 147, "Input",ExpressionUUID->"76a4836f-de11-4fba-baee-1cd2c3179b24"],
+Cell[13256, 405, 388, 5, 49, "Output",ExpressionUUID->"d605a05f-48af-4dbb-8f2c-874142af2bfb"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[13681, 415, 482, 12, 53, "Input",ExpressionUUID->"f6fc812c-b4d4-48db-97ed-7fb51c94fe72"],
+Cell[14166, 429, 266, 7, 70, "Output",ExpressionUUID->"41280cc6-5330-4650-b1ed-b6ff837c8a08"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[14469, 441, 2491, 70, 73, "Input",ExpressionUUID->"5f0b23cb-c62c-4863-af76-c2eae9f835a1"],
+Cell[16963, 513, 412, 5, 82, "Output",ExpressionUUID->"9fc08c5e-a1a4-40ef-9ff2-f79a64e8ceb0"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[17412, 523, 918, 28, 102, "Input",ExpressionUUID->"a2545eec-6663-4340-8942-9ad97480903c"],
+Cell[18333, 553, 842, 28, 88, "Output",ExpressionUUID->"b9947e8a-e0c5-41b3-a627-bd5de5911d23"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[19212, 586, 5807, 158, 145, "Input",ExpressionUUID->"22b8c40e-1aac-4ea8-bea3-3ae52de001e3"],
+Cell[25022, 746, 364, 5, 82, "Output",ExpressionUUID->"a02de212-0e2a-4b0b-aa74-844739de0f51"]
+}, Open  ]]
+}
+]
+*)
+
