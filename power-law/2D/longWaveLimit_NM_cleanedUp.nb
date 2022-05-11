@@ -1,0 +1,253 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      7643,        243]
+NotebookOptionsPosition[      7063,        223]
+NotebookOutlinePosition[      7436,        239]
+CellTagsIndexPosition[      7393,        236]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"alphaVal", " ", "=", 
+   RowBox[{"(", 
+    RowBox[{"1", "/", 
+     RowBox[{"3.0", "^", "2"}]}], ")"}]}], " ", ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"nVal", " ", "=", " ", "1.0"}], ";"}], "\[IndentingNewLine]", 
+  RowBox[{"(*", 
+   RowBox[{
+   "assume", " ", "only", " ", "one", " ", "positive", " ", "real", " ", 
+    "solution"}], "*)"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"fEqnVal", " ", "=", " ", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       FractionBox["1", 
+        RowBox[{
+         SuperscriptBox[
+          RowBox[{"(", 
+           RowBox[{"hc", "-", "1"}], ")"}], "2"], "hc"}]], 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"-", 
+           RowBox[{"(", 
+            RowBox[{"\[Beta]", "-", "1"}], ")"}]}], 
+          SuperscriptBox["hc", 
+           FractionBox[
+            RowBox[{"2", 
+             RowBox[{"(", 
+              RowBox[{"1", "+", 
+               RowBox[{"2", "n"}]}], ")"}]}], "n"]]}], "+", 
+         RowBox[{"\[Beta]", " ", 
+          SuperscriptBox["hc", 
+           FractionBox[
+            RowBox[{"2", 
+             RowBox[{"(", 
+              RowBox[{"1", "+", "n"}], ")"}]}], "n"]]}], "+", 
+         RowBox[{"2", 
+          RowBox[{"(", 
+           RowBox[{"\[Beta]", "-", "1"}], ")"}], 
+          SuperscriptBox["hc", 
+           FractionBox[
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "n"}]}], "n"]]}], "-", 
+         RowBox[{"2", " ", "\[Beta]", " ", 
+          SuperscriptBox["hc", 
+           FractionBox[
+            RowBox[{"1", "+", "n"}], "n"]]}], "+", "1"}], ")"}]}], "\[Equal]",
+       "\[Alpha]"}], ")"}], "/.", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"\[Beta]", "\[Rule]", 
+       FractionBox[
+        RowBox[{"2", " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", 
+           RowBox[{"2", "*", "nVal"}]}], ")"}]}], 
+        RowBox[{"2", "+", 
+         RowBox[{"3", "*", "nVal"}]}]]}], ",", " ", 
+      RowBox[{"\[Alpha]", "\[Rule]", "alphaVal"}], ",", " ", 
+      RowBox[{"n", "\[Rule]", "nVal"}]}], "}"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"sol1", " ", "=", " ", 
+   RowBox[{"NSolve", "[", 
+    RowBox[{
+     RowBox[{"fEqnVal", " ", "&&", "  ", 
+      RowBox[{"hc", ">", "0"}]}], ",", " ", "hc"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"qEqnVal", " ", "=", " ", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"\[Beta]", "-", "1"}], ")"}], 
+       SuperscriptBox["hc", 
+        FractionBox[
+         RowBox[{"1", "+", 
+          RowBox[{"2", " ", "n"}]}], "n"]]}], "+", 
+      SqrtBox[
+       RowBox[{
+        RowBox[{"\[Beta]", " ", 
+         RowBox[{"(", 
+          RowBox[{"\[Beta]", "-", "1"}], ")"}], 
+         SuperscriptBox["hc", 
+          FractionBox[
+           RowBox[{"2", 
+            RowBox[{"(", 
+             RowBox[{"1", "+", 
+              RowBox[{"2", " ", "n"}]}], ")"}]}], "n"]]}], "+", 
+        RowBox[{"\[Alpha]", " ", 
+         SuperscriptBox["hc", "3"]}]}]]}], ")"}], "/.", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"sol1", "[", 
+       RowBox[{"[", 
+        RowBox[{"1", ",", "1"}], "]"}], "]"}], ",", " ", 
+      RowBox[{"\[Beta]", "\[Rule]", 
+       FractionBox[
+        RowBox[{"2", " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", 
+           RowBox[{"2", "*", "nVal"}]}], ")"}]}], 
+        RowBox[{"2", "+", 
+         RowBox[{"3", "*", "nVal"}]}]]}], ",", " ", 
+      RowBox[{"\[Alpha]", "\[Rule]", "alphaVal"}], ",", " ", 
+      RowBox[{"n", "\[Rule]", "nVal"}]}], "}"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"cEqnVal", " ", "=", 
+   RowBox[{
+    RowBox[{"(", " ", 
+     RowBox[{
+      SuperscriptBox["hc", 
+       FractionBox[
+        RowBox[{"1", "+", "n"}], "n"]], "+", 
+      RowBox[{"q", " ", 
+       SuperscriptBox["hc", 
+        RowBox[{"-", "1"}]]}]}], ")"}], "/.", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"q", "->", "qEqnVal"}], ",", " ", 
+      RowBox[{"sol1", "[", 
+       RowBox[{"[", 
+        RowBox[{"1", ",", "1"}], "]"}], "]"}], ",", " ", 
+      RowBox[{"n", "\[Rule]", "nVal"}]}], "}"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"h2EqnVal", " ", "=", " ", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"-", 
+       RowBox[{"(", 
+        RowBox[{
+         FractionBox["h1", "2"], "+", 
+         FractionBox[
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"\[Beta]", "-", "1"}], ")"}], " ", 
+           SuperscriptBox["c", "2"]}], "\[Alpha]"]}], ")"}]}], "+", 
+      SqrtBox[
+       RowBox[{
+        SuperscriptBox[
+         RowBox[{"(", 
+          RowBox[{
+           FractionBox["h1", "2"], "+", 
+           FractionBox[
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{"\[Beta]", "-", "1"}], ")"}], 
+             SuperscriptBox["c", "2"]}], "\[Alpha]"]}], ")"}], "2"], "+", 
+        FractionBox[
+         RowBox[{"2", "\[Beta]", " ", 
+          SuperscriptBox["q", "2"]}], 
+         RowBox[{"\[Alpha]", " ", "h1"}]]}]]}], ")"}], "/.", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"h1", "\[Rule]", "1.0"}], ",", " ", 
+      RowBox[{"c", "->", "cEqnVal"}], ",", " ", 
+      RowBox[{"q", "->", "qEqnVal"}], ",", " ", 
+      RowBox[{"\[Beta]", "\[Rule]", 
+       FractionBox[
+        RowBox[{"2", " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", 
+           RowBox[{"2", "*", "nVal"}]}], ")"}]}], 
+        RowBox[{"2", "+", 
+         RowBox[{"3", "*", "nVal"}]}]]}], ",", " ", 
+      RowBox[{"\[Alpha]", "\[Rule]", "alphaVal"}], ",", " ", 
+      RowBox[{"n", "\[Rule]", "nVal"}]}], "}"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Print", "[", "cEqnVal", "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Print", "[", "h2EqnVal", "]"}]}], "Input",
+ CellChangeTimes->{{3.8612174163444834`*^9, 3.8612174578866234`*^9}, 
+   3.861217490682375*^9},
+ CellLabel->"In[10]:=",ExpressionUUID->"1237e9a1-7ad3-414e-bd62-a533cf25b1e7"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData["7.52167588520406`"], "Print",
+ CellChangeTimes->{{3.8612174694343348`*^9, 3.8612174921858377`*^9}},
+ CellLabel->
+  "During evaluation of \
+In[10]:=",ExpressionUUID->"c9faab4d-644f-40e1-975b-8b7df3b5ee4d"],
+
+Cell[BoxData["4.394280621876874`"], "Print",
+ CellChangeTimes->{{3.8612174694343348`*^9, 3.8612174921858377`*^9}},
+ CellLabel->
+  "During evaluation of \
+In[10]:=",ExpressionUUID->"86c03daf-8d71-44a6-9007-6a58c40b6951"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{759, 833},
+WindowMargins->{{Automatic, 346}, {Automatic, 69}},
+Magnification:>1.5 Inherited,
+FrontEndVersion->"12.0 for Microsoft Windows (64-bit) (April 8, 2019)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 5990, 183, 1037, "Input",ExpressionUUID->"1237e9a1-7ad3-414e-bd62-a533cf25b1e7"],
+Cell[CellGroupData[{
+Cell[6595, 209, 218, 4, 34, "Print",ExpressionUUID->"c9faab4d-644f-40e1-975b-8b7df3b5ee4d"],
+Cell[6816, 215, 219, 4, 34, "Print",ExpressionUUID->"86c03daf-8d71-44a6-9007-6a58c40b6951"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+
