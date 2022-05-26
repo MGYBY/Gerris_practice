@@ -120,6 +120,7 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LDOMAIN/2.0)/LDOMAIN))
         double muVal = (MU(Tf,D2));
         return muVal;
     }  {
+    # best option for viscosity: Crank-Nicolson+harmonic viscosity
 	beta = 1
 	tolerance = 0.2e-5
 	# beta = 0.5
