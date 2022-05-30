@@ -125,6 +125,7 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
     # VariableFiltered Tf T 3
     PhysicalParams { alpha = 1./set_density(Tf) }
     
+    # note that if parallelism is used, sufficient partition should be used 
     Solid (cube(LDOMAIN/2.0, (2.50*(NORMALDEPTH)+0.5*LDOMAIN*2), 0.0, LDOMAIN*2))
     RefineSolid MAXLEVEL
 
