@@ -43,7 +43,8 @@ Define AIRRHO 1.12
 Define AIRVIS (MUREF/50.0)
 
 #surface tension coefficient
-Define STSIGMA 0.072
+Define WEBER 650.0
+Define STSIGMA (MUDRHO*pow(NORMALVEL,2.0)*NORMALDEPTH/WEBER)
 
 Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
 
@@ -142,8 +143,8 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
     }
 
     # BAsed on unfiltered
-    # VariableCurvature K T
-    # SourceTension T STSIGMA K
+    VariableCurvature K T
+    SourceTension T STSIGMA K
 
     # initial conditions
     Refine ((y>0.0)&&(y<1.40*NORMALDEPTH) ? MAXLEVEL : MINLEVEL)
