@@ -55,9 +55,12 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
 } {
     Global {
     double velDist (double x, double y, double hn, double un, double Lx, double amp) {
-        // double hDist = hn*(1.0+amp*sin(2.0*M_PI*x/Lx));
         if (y<HDIST(x)) {
-            return ((1.0+2.0*POWERLAWN)/(1.0+POWERLAWN)*(hn*un/HDIST(x))*(1.0-pow((1.0-y/HDIST(x)), (1.0+POWERLAWN)/POWERLAWN)));
+            return ((1.0+2.0*POWERLAWN)/(1.0+POWERLAWN)*(FR*pow(CHANNELCOS*GRAVITYCOEFF*HDIST(x), 0.50))*(1.0-pow((1.0-y/HDIST(x)), (1.0+POWERLAWN)/POWERLAWN)));
+        }
+        else if (y>=HDIST(x) && y<=(HDIST(x)+8*LBOX/pow(2,MAXLEVEL))) {
+	// use this trick to reduce shear at interface
+            return ((1.0+2.0*POWERLAWN)/(1.0+POWERLAWN)*(FR*pow(CHANNELCOS*GRAVITYCOEFF*HDIST(x), 0.50))*(((HDIST(x)+8*LBOX/pow(2,MAXLEVEL)-y)/(8*LBOX/pow(2,MAXLEVEL)))));
         }
         else return 0.0;
     }
