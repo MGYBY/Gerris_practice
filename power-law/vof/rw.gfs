@@ -222,6 +222,28 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
     } { width = 1600 height = 400 } view.gfv
 
     # OutputDropletSums { istep = 1 } drops.txt  { v = T*dV   } T
+    
+    # energy contents
+    OutputScalarSum { istep = 1 } {
+	awk '{
+          print $3,$5;
+          fflush (stdout);
+        }' > totalEnergy
+    } { v = T*MUDRHO*((0.5*Velocity2)+(GRAVITYCOEFF*CHANNELCOS*y)) }
+
+    OutputScalarSum { istep = 1 } {
+	awk '{
+          print $3,$5;
+          fflush (stdout);
+        }' > kineticEnergy
+    } { v = T*MUDRHO*(0.5*Velocity2) }
+
+    OutputScalarSum { istep = 1 } {
+	awk '{
+          print $3,$5;
+          fflush (stdout);
+        }' > potentialEnergy
+    } { v = T*MUDRHO*(GRAVITYCOEFF*CHANNELCOS*y) }
 	
 	EventBalance { istep = 20 } 0.20
     OutputBalance { istep = 60 } balance
