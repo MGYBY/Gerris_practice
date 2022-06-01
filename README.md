@@ -10,6 +10,8 @@ change to:
 MPI_Comm_set_errhandler (MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL);
 ```
 2. Gerris-style syntax-highlighting:
-C-syntax is good enough. Follow this thread:
+C-syntax is good enough. Follow these threads:
 
 *https://unix.stackexchange.com/questions/137989/how-to-change-default-syntax-highlighting-for-header-file-in-kate*
+
+*https://gitlab.com/-/snippets/4499*
