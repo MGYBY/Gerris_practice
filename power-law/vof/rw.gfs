@@ -56,6 +56,7 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
     Global {
     double velDist (double x, double y, double hn, double un, double Lx, double amp) {
         if (y<HDIST(x)) {
+	// "const-Fr" pattern seems to reduce fluid-air initial shear, compare to "const-q" pattern
             return ((1.0+2.0*POWERLAWN)/(1.0+POWERLAWN)*(FR*pow(CHANNELCOS*GRAVITYCOEFF*HDIST(x), 0.50))*(1.0-pow((1.0-y/HDIST(x)), (1.0+POWERLAWN)/POWERLAWN)));
         }
         else if (y>=HDIST(x) && y<=(HDIST(x)+8*LBOX/pow(2,MAXLEVEL))) {
