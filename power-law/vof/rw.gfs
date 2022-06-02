@@ -118,7 +118,9 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
     # ProjectionParams { tolerance = 1e-4  nitermax = 175 nitermin = 6}
 
     # VOF tracer and interface positions
-    VariableTracerVOF T
+    # VariableTracerVOF T
+    # a more consistent VOF method
+    VariableTracerVOFHeight T
 
     VariablePosition X T x
     VariablePosition Y T y
