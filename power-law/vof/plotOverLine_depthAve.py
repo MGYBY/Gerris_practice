@@ -29,12 +29,13 @@ for xcoord in np.linspace(-0.014014, 0.084087, hori_line_num):
     source = PlotOverLine1
     view = GetActiveView()
     Render()
-    writer = CreateWriter("slice_2.3.csv", source)
+    filename = "slice_3.5.csv"
+    writer = CreateWriter(filename, source)
     writer.FieldAssociation = "Point Data"
     writer.UpdatePipeline()
     Render()
     del writer
-    a = np.loadtxt("slice_2.3.csv", usecols = range(0,4), skiprows=1, dtype=np.float32, delimiter=',')
+    a = np.loadtxt(filename, usecols = range(0,4), skiprows=1, dtype=np.float32, delimiter=',')
     #a = a[~np.isnan(a).any(axis=1)] # Remove the rows with NaN
     a = a[~np.isnan(a).any(axis=1), :]
     vof_array = a[:, 2]
@@ -52,4 +53,4 @@ for xcoord in np.linspace(-0.014014, 0.084087, hori_line_num):
     #print(str(surface_ind))
     f.write("\n")
     f.close()
-    os.system('rm slice_2.3.csv')
+    os.system('rm '+ filename)
