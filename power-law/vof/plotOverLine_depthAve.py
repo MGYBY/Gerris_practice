@@ -46,7 +46,8 @@ for xcoord in np.linspace(-0.014014, 0.084087, hori_line_num):
         if ((vof_array[ele]>0.001 and vof_array[ele]<0.999) and ele>surface_ind):
         #if (( vof_array[ele]==1 and vof_array[ele+1]==0 ) and ele>surface_ind):
             surface_ind = ele
-    sum_val = np.average((a[0:surface_ind, 2]*a[0:surface_ind, 3]))
+#     sum_val = np.average((a[0:surface_ind, 2]*a[0:surface_ind, 3]))
+    sum_val = np.average(a[0:surface_ind, 3], weights=vof_array[0:surface_ind])
     f=open('res','a')
     np.savetxt(f, np.array([xcoord, sum_val]), newline=" ")
     #np.savetxt(f, np.array([xcoord, sum_val, surface_ind]), newline=" ")
