@@ -36,20 +36,28 @@ for xcoord in np.linspace(-0.014014, 0.084087, hori_line_num):
     Render()
     del writer
     a = np.loadtxt(filename, usecols = range(0,4), skiprows=1, dtype=np.float32, delimiter=',')
+    y_slice = np.linspace(0, yy, 501)
+    a = np.c_[y_slice, a]
     #a = a[~np.isnan(a).any(axis=1)] # Remove the rows with NaN
     a = a[~np.isnan(a).any(axis=1), :]
-    vof_array = a[:, 2]
+    vof_array = a[:, 3]
+    y_coord_array = a[:, 0]
     #vof_array = a[:, 1]
     surface_ind = 0
-    # locate the free-surface
+    vof_difference = 0.50
+    height = 0.0
     for ele in range(np.size(vof_array)):
         if ((vof_array[ele]>0.001 and vof_array[ele]<0.999) and ele>surface_ind):
         #if (( vof_array[ele]==1 and vof_array[ele+1]==0 ) and ele>surface_ind):
             surface_ind = ele
+        # To find the closest point to interface
+        if (np.abs(vof_array[ele]-0.5)<vof_difference):
+            height = y_coord_array[ele]
+            vof_difference = np.abs(vof_array[ele]-0.5)
 #     sum_val = np.average((a[0:surface_ind, 2]*a[0:surface_ind, 3]))
-    sum_val = np.average(a[0:surface_ind, 3], weights=vof_array[0:surface_ind])
+    sum_val = np.average(a[0:surface_ind, 4], weights=vof_array[0:surface_ind])
     f=open('res','a')
-    np.savetxt(f, np.array([xcoord, sum_val]), newline=" ")
+    np.savetxt(f, np.array([xcoord, sum_val, height]), newline=" ")
     #np.savetxt(f, np.array([xcoord, sum_val, surface_ind]), newline=" ")
     #print(str(surface_ind))
     f.write("\n")
