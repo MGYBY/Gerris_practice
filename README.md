@@ -15,6 +15,7 @@ C-syntax is good enough. Follow these threads:
 *https://unix.stackexchange.com/questions/137989/how-to-change-default-syntax-highlighting-for-header-file-in-kate*
 
 *https://gitlab.com/-/snippets/4499*
+
 3. Possible error in some distros:
 ```
 gerris: file `column.gfs' is not a valid simulation file
