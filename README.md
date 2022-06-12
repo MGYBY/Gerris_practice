@@ -27,4 +27,4 @@ sudo ln /usr/lib/x86_64-linux-gnu/gerris/libgfsview2D-0.0.1.so libgfsview2D.so
 
 sudo ln /usr/lib/x86_64-linux-gnu/gerris/libgfsview3D-0.0.1.so libgfsview3D.so
 ```
-**Gfsview cannot be installed in Ubuntu 22.04?**
+**Gfsview cannot be installed in Ubuntu 22.04 from source?**
