@@ -110,6 +110,9 @@ Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
 
     Time { end = 15.0 dtmax = 2e-3 }
     
+    # Enhance convergence with Hypre, tuned parameters. More levels are preferred.
+    GModule hypre { verbose = 0 coarsening_type = hmis  nlevel = 13}
+    
     AdvectionParams { cfl = 0.455 }
 
     # We need to tune the solver
