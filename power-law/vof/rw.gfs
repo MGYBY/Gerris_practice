@@ -48,7 +48,7 @@ Define STSIGMA (MUDRHO*pow(NORMALVEL,2.0)*NORMALDEPTH/WEBER)
 
 Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
 
-17 17 GfsSimulation GfsBox GfsGEdge {
+NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     # shift origin of the domain
     x = 0.5 y = 0.5
 	# y = 0.5
