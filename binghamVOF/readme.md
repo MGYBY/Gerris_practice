@@ -47,6 +47,8 @@ https://sourceforge.net/p/gfs/mailman/message/27056583/
 ```
 gerris2D -e "OutputSimulation { istep = 1 } simTec-14.2.plt { format = Tecplot variables = T,Tf,U,V,P }" dump-14.2.gfs > /dev/null
 
+echo "Save profile-3.4.gnu { format = Gnuplot }" | gfsview-batch2D line.gfv snapshot-3.4.gfs
+
 14. Trick to output VOF surface every certain time interval:
 ```
 http://gfs.sourceforge.net/wiki/index.php/Gfsview-batch
