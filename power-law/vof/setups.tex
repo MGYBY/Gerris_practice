@@ -1,0 +1,215 @@
+\documentclass[a4paper]{article}
+\usepackage[a4paper,top=2cm,bottom=2.5cm,left=1.5cm,right=1.5cm,marginparwidth=1.75cm]{geometry}
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{listings}
+
+%% Sets page size and margins
+
+\usepackage{float}
+%% Useful packages
+\usepackage{amsmath}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{threeparttable}
+\usepackage{booktabs}
+\usepackage[sc]{mathpazo}
+\usepackage{physics}
+\usepackage{pzccal}
+\usepackage{subcaption}
+
+\newcommand{\fr}{{\rm{Fr}}}
+\newcommand{\sa}{\sin\theta}
+\newcommand{\gs}{{\bf{$\mathpzc{Gerris}$}}}
+\newcommand{\bs}{{\bf{$\mathpzc{Basilisk}$}}}
+
+\graphicspath{ {./images/} }
+% \DeclareGraphicsExtensions{.pdf,.jpg,.png}
+
+%% defined colors
+\definecolor{Blue}{rgb}{0,0,0.5}
+\definecolor{Green}{rgb}{0,0.75,0.0}
+\definecolor{LightGray}{rgb}{0.6,0.6,0.6}
+\definecolor{DarkGray}{rgb}{0.3,0.3,0.3}
+
+\title{Collection of Case Setups}
+\author{
+Boyuan Yu}
+\date{\today}
+
+
+\begin{document}
+\maketitle
+\section{Normal-flow Setups}
+\autoref{simulation1}
+\begin{table}[htbp]
+		\centering
+		\begin{tabular}{cccccccc}
+			$n$ & $\fr$ & $\rm Re$ & $H\;{\rm (m)}$ & $U\;(\rm{m/s})$ & $\sa$  & $\mu_n\; ({\rm Pa \; s^n})$ & $\rho\;({\rm kg/m^3})$\\
+			\toprule
+			1.00 & 1.00 & 49.9 & $6.33\times10^{-4}$ & $7.88\times10^{-2}$ & 0.06 & 0.001 & 1000 \\
+			
+			0.40 & 1.00 & 30.2 & $2.10\times10^{-3}$ & $1.43\times10^{-1}$ & 0.06 & 0.14 & 1120 \\
+			
+			0.20 & 1.00 & 24.6 & $6.03\times10^{-3}$ & $2.43\times10^{-1}$ & 0.06 & 1.38 & 1202 \\
+			
+			\bottomrule 
+		\end{tabular}
+	\caption{Simulation parameters for normal-flow simulation for various power-law fluids.}
+	\label{simulation1}
+\end{table}
+
+\section{Periodic Cases, Minimum Roll Wave}
+\autoref{simulation2}
+\begin{table}[htbp]
+	\begin{subtable}{1\textwidth}
+		\centering
+		\begin{tabular}{ccccccc}
+			$S_o$ & $\rm Re$ & $H\;{\rm (m)}$ & $U\;{\rm (m/s)}$ & $\lambda/\frac{U^2}{g\sa}$ & $\lambda/H$ & Mesh configuration\\
+			\toprule
+			0.08 & 4.55 & $0.00126302$ & $0.0496986$ & 21.6809 & 52.3 & 1024 boxes $\times 1$\\
+			
+			0.06 & 6.07 & 0.00160556 & 0.0560736 & 21.6809 & 52.3 & 512 boxes $\times 3$\\
+			
+			0.04 & 9.12 & 0.00225135 & 0.066433 & 21.6809 & 104.9 & 2048 boxes $\times 1$\\
+			
+			\textcolor{red}{\bf 0.02} & 18.25 & 0.00401185 & 0.0887085 & 21.6809 & 216.8 & 1024 boxes $\times 5$\\
+			
+			0.01 & 36.5 & 0.00714848 & 0.118422 & 21.6809 & 419.7 & 8192 boxes $\times 1$\\
+			
+			0.0075 & 48.7 & 0.00908512 & 0.133504 & 21.6809 & 559.6 & 1024 boxes $\times 11$\\
+			
+			\bottomrule 
+		\end{tabular}
+		\caption{Simulation parameters for $\fr=0.447$.}
+		\label{params_0447}
+	\end{subtable}
+	
+	\vspace{0.25cm}
+	
+	\begin{subtable}{1\textwidth}
+		\centering
+		\begin{tabular}{ccccccc}
+			$S_o$ & $\rm Re$ & $H\;{\rm (m)}$ & $U\;{\rm (m/s)}$ & $\lambda/\frac{U^2}{g\sa}$ & $\lambda/H$ & Mesh configuration\\
+			\toprule
+			0.08 & 22.7 & 0.00165162 & 0.127084 & 2.93468 & 37.0 & 1024 boxes $\times 1$\\
+			
+			0.06 & 30.2 & 0.00209955 & 0.143386 & 2.93468 & 48.8 & 1024 boxes $\times 1$\\
+			
+			0.04 & 45.59 & 0.00294403 & 0.169876 & 2.93468 & 74.2 & 128 boxes $\times 11$\\
+			
+			\textcolor{red}{\bf 0.02} & 91.24 & 0.00524619 & 0.226836 & 2.93468 & 146.71 & 512 boxes $\times 7$\\
+			
+			0.01 & 182.5 & 0.00934787 & 0.302817 & 2.93468 & 297.1 & 256 boxes $\times 22$\\
+			
+			0.0075 & 243.3 & 0.0118804 & 0.341384 & 2.93468 & 396.1 & 512 boxes $\times 15$\\
+			\bottomrule 
+		\end{tabular}
+		\caption{Simulation parameters for $\fr=1.00$.}
+		\label{params_1}
+	\end{subtable}
+
+	\vspace{0.25cm}
+	
+	\begin{subtable}{1\textwidth}
+		\centering
+		\begin{tabular}{ccccccc}
+			$S_o$ & $\rm Re$ & $H\;{\rm (m)}$ & $U\;{\rm (m/s)}$ & $\lambda/\frac{U^2}{g\sa}$ & $\lambda/H$ & Mesh configuration\\
+			\toprule
+			0.08 & 35.5 & 0.00177915 & 0.164875 & 2.08501 & 40.6 & 128 boxes $\times 7$\\
+			
+			0.06 & 54.2 & 0.00226167 & 0.186024 & 2.08501 & 54.2 & 256 boxes $\times 5$\\
+			
+			0.04 & 71.2 & 0.00317136 & 0.220391 & 2.08501 & 81.4 & 256 boxes $\times 8$\\
+			
+			0.02 & 142.6 & 0.00565128 & 0.294289 & 2.08501 & 162.9 & 512 boxes $\times 7$\\
+			\bottomrule 
+		\end{tabular}
+		\caption{\textcolor{red}{TODO: Simulation parameters for $\fr=1.25$.}}
+		\label{params_125}
+	\end{subtable}
+	
+	\vspace{0.25cm}
+
+	\begin{subtable}{1\textwidth}
+		\centering
+		\begin{tabular}{ccccccc}
+			$S_o$ & $\rm Re$ & $H\;{\rm (m)}$ & $U\;{\rm (m/s)}$ & $\lambda/\frac{U^2}{g\sa}$ & $\lambda/H$ & Mesh configuration\\
+			\toprule
+			0.08 & 51.2 & 0.00189063 & 0.203954 & 1.6458 & 46.1 & 1024 boxes $\times 1$\\
+			
+			0.06 & 68.3 & 0.0024030 & 0.230116 & 1.6458 & 68.3 & 512 boxes $\times 3$\\
+			
+			0.04 & 102.6 & 0.00337007 & 0.272629 & 1.6458 & 92.2 & 1024 boxes $\times 5$\\
+			
+			0.02 & 205.3 & 0.00600538 & 0.364043 & 1.6458 & 185.1 & 4096 boxes $\times 1$\\
+			\bottomrule 
+		\end{tabular}
+		\caption{Simulation parameters for $\fr=1.50$.}
+		\label{params_150}
+	\end{subtable}
+
+	\vspace{0.25cm}
+	
+	\begin{subtable}{1\textwidth}
+		\centering
+		\begin{tabular}{c}
+			Cases\\
+			\toprule
+				A \\
+			\bottomrule 
+		\end{tabular}
+		\caption{\textcolor{red}{TODO: Simulation parameters for $\fr=1.75$.}}
+		\label{params_175}
+	\end{subtable}
+
+	\caption{Simulation parameters for periodic roll waves. Power-law fluid properties: $n=0.4$, $\rho=1120$ $\rm{kg/m^3}$, $\mu_n=0.14$ $\rm Pa\;s^{0.4}$.}
+	\label{simulation2}
+\end{table}
+
+\section{Stability Boundary Setups}
+\autoref{simulation3}
+\begin{table}[htbp]
+	\centering
+	\begin{tabular}{cccccccc}
+		$\fr$ & $\rm Re$ & $S_o$ & $H\;{\rm (m)}$ & $U\;{\rm (m/s)}$ & $S_o\lambda/H$ & $\lambda/H$ & Mesh configuration\\
+		\toprule
+		$*$0.40 & 4.86 & 0.06 & 0.00154696 & 0.0492315 & 20.0 & 333.3 & 8192 boxes $\times 1$\\
+		$*$0.20 & 1.21 & 0.06 & 0.00122783 & 0.0219301 & 20.0 & 333.3 & 8192 boxes $\times 1$\\
+		
+		0.40 & 4.86 & 0.06 & 0.00154696 & 0.0492315 & 6.38848 & 333.3 & 8192 boxes $\times 1$\\
+		0.20 & 1.21 & 0.06 & 0.00122783 & 0.0219301 & 6.38848 & 333.3 & 8192 boxes $\times 1$\\
+		
+		\bottomrule 
+	\end{tabular}
+	\begin{tablenotes}
+		\small
+		\item $*$ Wavelength too long to get converged results.
+	\end{tablenotes}
+	\caption{Simulation parameters for cases with Froude number near the stability boundary. For now, the power-law fluid is: $n=0.4$, $\rho=1120$ $\rm{kg/m^3}$, $\mu_n=0.14$ $\rm Pa\;s^{0.4}$.}
+	\label{simulation3}
+\end{table}
+
+\section{Front-runner Setups}
+\autoref{simulation4}
+
+\begin{table}[htbp]
+	\centering
+	\begin{tabular}{ccccccccccc}
+		$S_oL_x/H$ & $\fr$ & $\rm Re$ & $S_o$ & $H\;{\rm (m)}$ & $U\;{\rm (m/s)}$ & $L_x/H$ & $T$ (s) & Dist. type & B.C.  & Mesh config.\\
+		\toprule
+		25.0 & 1.00 & 30.2 & 0.06 & 0.00209955 & 0.143386 & 333.3 & 0.31352 & Type-c & Inlet-outlet & 2048 boxes $\times 4$\\
+		50.0 & 1.00 & 30.2 & 0.06 & 0.00209955 & 0.143386 & 666.6 & 0.31352 & Type-c & Inlet-outlet & 8196 boxes $\times 1$\\
+		\bottomrule 
+	\end{tabular}
+	\caption{Simulation parameters for front-runner simulation. For now, the power-law fluid is: $n=0.4$, $\rho=1120$ $\rm{kg/m^3}$, $\mu_n=0.14$ $\rm Pa\;s^{0.4}$.}
+	\label{simulation4}
+\end{table}
+
+
+\end{document}
