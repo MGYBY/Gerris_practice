@@ -18,6 +18,9 @@ Define CHANNELSIN 0.015
 Define CHANNELCOS (pow((1.0-pow(CHANNELSIN,2.0)),0.50))
 Define POWERLAWN 1.00
 
+# alternatively, define the domain length using the dimensionless variable
+# Define LDOMAIN (2.93468*(pow(NORMALVEL,2.0))/(GRAVITYCOEFF*CHANNELSIN))
+
 # disturbance parameters
 Define DISTAmp 0.225
 # if use non-periodic BC, a wavelength is also needed
