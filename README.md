@@ -28,3 +28,15 @@ sudo ln /usr/lib/x86_64-linux-gnu/gerris/libgfsview2D-0.0.1.so libgfsview2D.so
 sudo ln /usr/lib/x86_64-linux-gnu/gerris/libgfsview3D-0.0.1.so libgfsview3D.so
 ```
 **Gfsview cannot be installed in Ubuntu 22.04 from source?**
+
+4. Gfsview compilation error for Ubuntu 22.04:
+```
+/usr/bin/ld: gfsview2D-main.o: undefined reference to symbol 'XSync'
+/usr/bin/ld: /lib/x86_64-linux-gnu/libX11.so.6: error adding symbols: DSO missing from command line
+collect2: error: ld returned 1 exit status
+make[4]: *** [Makefile:395: gfsview2D] Error 1
+```
+Solution: include necessary libraries
+```
+./configure LIBS=-lX11
+```
