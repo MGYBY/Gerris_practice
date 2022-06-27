@@ -271,24 +271,27 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
                 FS=" |:"
             }
             {
-                if ($1 == "#") {
-                    # get column indices of the relevant fields (X,Y)
-            	for (i = 1; i <= NF; i++) {
-            	    if ($i == "T")
-            		iT = $(i-1);
-            	    else if ($i == "U")
-            		iU = $(i-1);
-                    else if ($i == "t")
-            		iTIME = $(i-1);
-            	}
-                }
-                else {
-                    T = $iT
-                    U = $iU
-                    Time = $iTime
-            	    print Time, T, U;
-            	    fflush (stdout);
-                }
+                # if ($1 == "#") {
+                #     # get column indices of the relevant fields (X,Y)
+            	# for (i = 1; i <= NF; i++) {
+            	#     if ($i == "T")
+            	# 	iT = $(i-1);
+            	#     else if ($i == "U")
+            	# 	iU = $(i-1);
+                #     else if ($i == "t")
+            	# 	iTIME = $(i-1);
+            	# }
+                # }
+                # else {
+                #     T = $iT
+                #     U = $iU
+                #     Time = $iTime
+            	#     print Time, T, U;
+            	#     fflush (stdout);
+                # }
+                # a workaround here
+                if ($1 != "#")
+                    {print $1, $9, $7;}
             }' < "$file"  > endSlice-temp
 
             awk '
