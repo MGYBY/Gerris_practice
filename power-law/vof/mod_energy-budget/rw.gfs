@@ -47,6 +47,8 @@ Define AIRVIS (0.001/50.0)
 Define WEBER 6400.0
 Define STSIGMA (MUDRHO*pow(NORMALVEL,2.0)*NORMALDEPTH/WEBER)
 
+Define SLICEDELTA (2.0*NORMALDEPTH/120.0)
+
 Define HDIST(x) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*(x+LBOX/2.0)/LDOMAIN)))
 
 NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
@@ -299,7 +301,7 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
                 sum = 0.0;
                 time = 0.0;
             } {
-                sum += $2*$3;
+                sum += (-1.0)*$2*$3*SLICEDELTA*CHANNELSIN*LDOMAIN;
                 time += $1;
             } END {
                 # an ugly workaround to get the average of time column
