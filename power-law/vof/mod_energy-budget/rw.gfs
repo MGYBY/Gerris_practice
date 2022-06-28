@@ -245,7 +245,8 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
           print $3,$5;
           fflush (stdout);
         }' > potentialEnergy
-    } { v = T*MUDRHO*(GRAVITYCOEFF*CHANNELCOS*y-GRAVITYCOEFF*x*CHANNELSIN) }
+    } { v = T*MUDRHO*(GRAVITYCOEFF*CHANNELCOS*y-GRAVITYCOEFF*(x+LBOX)*CHANNELSIN) }
+    # need a translation here (LBOX) for NUMBOX>1 cases
 
     # OutputScalarSum { istep = 1 } {
 	# awk '{
@@ -262,57 +263,84 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     # OutputDropletSums { istep = 1 } drops.txt  { v = T*dV   } T
 
     # dissipation rate calculation
+    # average between two PBC
     EventList { istep = 1 } {
-        OutputLocation { } endSlice-%g gaugeLoc
+        OutputLocation { } endSlice1-%g gaugeLoc1
+        OutputLocation { } endSlice2-%g gaugeLoc2
 
         EventScript {} {
-            file="$(ls  endSlice-* | sort -V | tail -n1)"
+            file1="$(ls  endSlice1-* | sort -V | tail -n1)"
+            file2="$(ls  endSlice2-* | sort -V | tail -n1)"
 
            awk '
             BEGIN {
                 FS=" |:"
             }
             {
-                # if ($1 == "#") {
-                #     # get column indices of the relevant fields (X,Y)
-            	# for (i = 1; i <= NF; i++) {
-            	#     if ($i == "T")
-            	# 	iT = $(i-1);
-            	#     else if ($i == "U")
-            	# 	iU = $(i-1);
-                #     else if ($i == "t")
-            	# 	iTIME = $(i-1);
-            	# }
-                # }
-                # else {
-                #     T = $iT
-                #     U = $iU
-                #     Time = $iTime
-            	#     print Time, T, U;
-            	#     fflush (stdout);
-                # }
                 # a workaround here
                 if ($1 != "#")
                     {print $1, $9, $7;}
-            }' < "$file"  > endSlice-temp
+            }' < "$file1"  > endSlice1-temp
+            awk '
+            BEGIN {
+                FS=" |:"
+            }
+            {
+                # a workaround here
+                if ($1 != "#")
+                    {print $1, $9, $7;}
+            }' < "$file2"  > endSlice2-temp
 
             awk '
             BEGIN {
                 sum = 0.0;
                 time = 0.0;
             } {
-                sum += (-1.0)*$2*$3*SLICEDELTA*CHANNELSIN*LDOMAIN;
+                # int{alpha*rho_f*CHANNELSIN*L_x*u}
+                sum += (-1.0)*MUDRHO*$2*$3*SLICEDELTA*GRAVITYCOEFF*CHANNELSIN*LDOMAIN;
                 time += $1;
             } END {
                 # an ugly workaround to get the average of time column
                 # TODO: change to "get the first value" method to save computational cost
                 time = time/NR;
                 print time, sum;
-            }' < endSlice-temp > ef_temp
+            }' < endSlice1-temp > ef_temp1
+            awk '
+            BEGIN {
+                sum = 0.0;
+                time = 0.0;
+            } {
+                sum += (-1.0)*MUDRHO*$2*$3*SLICEDELTA*GRAVITYCOEFF*CHANNELSIN*LDOMAIN;
+                time += $1;
+            } END {
+                # an ugly workaround to get the average of time column
+                # TODO: change to "get the first value" method to save computational cost
+                time = time/NR;
+                print time, sum;
+            }' < endSlice2-temp > ef_temp2
 
-            cat ef_temp >> ef
+            cat ef_temp1 >> ef_temp
+            cat ef_temp2 >> ef_temp
 
-            rm endSlice-* ef_temp
+            # take average between two ends
+            awk '
+            BEGIN {
+                time = 0.0;
+                flux = 0.0;
+            } {
+                time += $1;
+                flux += $2;
+            } END {
+                time = time/NR;
+                flux = flux/NR;
+                print time, flux;
+            }
+            '  < ef_temp > ef_temp_res
+
+            cat ef_temp_res >> ef
+
+            rm  endSlice1-* endSlice2-* ef_temp*
+            # rm    ef_temp
         }
     }
 	
