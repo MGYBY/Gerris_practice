@@ -5,12 +5,25 @@ awk 'BEGIN {
     numBox = 3.0;
     domainLength = 0.1158174;
     normalDepth = 0.00160556;
-    xEnd = 0.9925*domainLength*(numBox-1.0)/numBox;
+    nx = 3.0*(2^9);
+    xEnd = ((nx-1.0)/nx)*domainLength*(numBox-1.0)/numBox;
     yEnd = 2.0*normalDepth;
     numPoint = 120.0;
     delta = yEnd/numPoint;
     for (y = yEnd/numPoint/2.0; y <= yEnd; y += yEnd/numPoint) print xEnd, y, 0.;
-}' > gaugeLoc
+}' > gaugeLoc1
+
+awk 'BEGIN {
+    numBox = 3.0;
+    domainLength = 0.1158174;
+    normalDepth = 0.00160556;
+    nx = 3.0*(2^9);
+    xEnd = domainLength*(1.0/nx+(-1.0)/numBox);
+    yEnd = 2.0*normalDepth;
+    numPoint = 120.0;
+    delta = yEnd/numPoint;
+    for (y = yEnd/numPoint/2.0; y <= yEnd; y += yEnd/numPoint) print xEnd, y, 0.;
+}' > gaugeLoc2
 
 echo "Gauges finished."
 
