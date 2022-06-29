@@ -1,29 +1,34 @@
-# gauge location file (numerical wave gauge, center of the domain)
-# awk 'BEGIN{ for (y = 0.0; y <= 0.0042; y += 0.0042/100.) print 0.001045, y, 0.;}' > gaugeLocHeight
-
+# a more reasonable way to automate the guage generation
 awk 'BEGIN {
-    numBox = 3.0;
-    domainLength = 0.1158174;
-    normalDepth = 0.00160556;
-    nx = 3.0*(2^9);
+    numBox = 5.0;
+    normalVel = 0.0456607;
+    normalDepth = 0.00151404;
+    gravCoeff = 9.81;
+    channelSin = 0.06;
+    domainLength = 50.4903*(normalVel^2)/(gravCoeff*channelSin);
+    nx = 5.0*(2^9);
     xEnd = ((nx-1.0)/nx)*domainLength*(numBox-1.0)/numBox;
     yEnd = 2.0*normalDepth;
-    numPoint = 120.0;
+    numPoint = 80.0;
     delta = yEnd/numPoint;
     for (y = yEnd/numPoint/2.0; y <= yEnd; y += yEnd/numPoint) print xEnd, y, 0.;
 }' > gaugeLoc1
 
 awk 'BEGIN {
-    numBox = 3.0;
-    domainLength = 0.1158174;
-    normalDepth = 0.00160556;
-    nx = 3.0*(2^9);
+    numBox = 5.0;
+    normalVel = 0.0456607;
+    normalDepth = 0.00151404;
+    gravCoeff = 9.81;
+    channelSin = 0.06;
+    domainLength = 50.4903*(normalVel^2)/(gravCoeff*channelSin);
+    nx = 5.0*(2^9);
     xEnd = domainLength*(1.0/nx+(-1.0)/numBox);
     yEnd = 2.0*normalDepth;
-    numPoint = 120.0;
+    numPoint = 80.0;
     delta = yEnd/numPoint;
     for (y = yEnd/numPoint/2.0; y <= yEnd; y += yEnd/numPoint) print xEnd, y, 0.;
 }' > gaugeLoc2
+
 
 echo "Gauges finished."
 
