@@ -40,3 +40,7 @@ Solution: include necessary libraries
 ```
 ./configure LIBS=-lX11
 ```
+
+5. Some good reads:
+
+*https://resources.oreilly.com/examples/9781565922259/*
