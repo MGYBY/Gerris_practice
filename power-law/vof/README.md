@@ -1,3 +1,3 @@
 VOF simulations.
 TODOs:
-- [ ] Embedded solid.
+- [x] Embedded solid.
