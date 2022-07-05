@@ -246,6 +246,8 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
           fflush (stdout);
         }' > potentialEnergy
     } { v = T*MUDRHO*(GRAVITYCOEFF*CHANNELCOS*y-GRAVITYCOEFF*(x+LBOX)*CHANNELSIN) }
+    # mod PE to make sure it is positive by changing the datum
+    # v = T*MUDRHO*(GRAVITYCOEFF*CHANNELCOS*y+GRAVITYCOEFF*(LDOMAIN-(x+LBOX))*CHANNELSIN)
     # need a translation here (LBOX) for NUMBOX>1 cases
 
     # OutputScalarSum { istep = 1 } {
