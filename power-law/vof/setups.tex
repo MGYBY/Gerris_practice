@@ -64,7 +64,10 @@ Boyuan Yu}
 \end{table}
 
 \section{Periodic Cases, Minimum Roll Wave}
-\autoref{simulation2}
+ \begin{itemize}
+ 	\item $n=0.40$: \autoref{simulation2}.
+ 	\item $n=0.20$: \autoref{simulation020}.
+ \end{itemize}
 \begin{table}[htbp]
 \begin{subtable}{1\textwidth}
 		\centering
@@ -201,6 +204,29 @@ Boyuan Yu}
 
 	\caption{Simulation parameters for periodic roll waves. Power-law fluid properties: $n=0.4$, $\rho=1120$ $\rm{kg/m^3}$, $\mu_n=0.14$ $\rm Pa\;s^{0.4}$.}
 	\label{simulation2}
+\end{table}
+
+\begin{table}[htbp]
+	\begin{subtable}{1\textwidth}
+		\centering
+		\begin{tabular}{ccccccc}
+			$S_o$ & $\rm Re$ & $H\;{\rm (m)}$ & $U\;{\rm (m/s)}$ & $\lambda/\frac{U^2}{g\sa}$ & $\lambda/H$ & Mesh configuration\\
+			\toprule
+			0.08 & 3.6741 & 0.00400887 & 0.0885026 & 8.2874 & 20.632383 & 256 boxes $\times 3$\\
+			
+			0.06 & ---\\
+			
+			0.04 & ---\\
+			
+			0.02 & ---\\
+			
+			\bottomrule 
+		\end{tabular}
+		\caption{\textcolor{red}{Simulation parameters for $\fr=0.447$.}}
+		\label{params_0447_n020}
+	\end{subtable}
+	\caption{Simulation parameters for periodic roll waves. Power-law fluid properties: $n=0.2$, $\rho=1202$ $\rm{kg/m^3}$, $\mu_n=1.38$ $\rm Pa\;s^{0.4}$.}
+	\label{simulation020}
 \end{table}
 
 \section{Stability Boundary Setups}
