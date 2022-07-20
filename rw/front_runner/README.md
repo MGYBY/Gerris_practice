@@ -6,7 +6,7 @@
 5. Kinetic scheme seems to be better to control oscillation.
 6. Use `GfsAdaptError` and `GfsAdaptGradient` to control oscillation.
 7.  - [x] centreline slice.
-8. Sweby limiter has **large time-step restriction** compared to minmod at high Fr (for example, Fr=5.60). Reason unknown. Possible reason: unmatched limiter functions for embedded solid and internal fluid field. A better option is to use van-leer limiter:
+8. Sweby limiter has **large time-step restriction** compared to minmod at (some) high Fr (for example, Fr=5.60). Reason unknown. Possible reason: unmatched limiter functions for embedded solid and internal fluid field. A better option is to use van-leer limiter:
 ```
 gradient = gfs_center_van_leer_gradient
 ```
