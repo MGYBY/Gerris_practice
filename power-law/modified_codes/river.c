@@ -1141,7 +1141,7 @@ static void river_run (GfsSimulation * sim)
     r->gradient = center_superbee_gradient;
   else if (r->gradient == gfs_center_sweby_gradient)
     r->gradient = center_sweby_gradient;
-  else if (r->gradient == gfs_gm_yu_gradient)
+  else if (r->gradient == gfs_center_yu_gradient)
     r->gradient = center_yu_gradient;
 
   gts_container_foreach (GTS_CONTAINER (r), (GtsFunc) fix_box_bc, r);
