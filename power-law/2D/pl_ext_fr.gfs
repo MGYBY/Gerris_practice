@@ -127,6 +127,15 @@ Define MINLEVEL 4
         maxlevel = x>(XB-width) ? MAXLEVEL : (MINLEVEL+1)
         minlevel = MINLEVEL
     } P
+    # or use a vorticity-based criterion
+#     AdaptFunction { istep = 1 } {
+# 	cmax = 5e-6
+# 	cfactor= 2
+# 	maxlevel = MAXLEVEL
+# 	minlevel = MINLEVEL
+#     } (fabs(VORT*dL/1.0))
+	# where VORT is defined in init
+	VORT = (P > DRY ? (dx("V") - dy("U")) : 0.0)
 
     AdaptError { istart = 1 istep = 1 } { cmax = (NORMALDEPTH/225.0) maxlevel = MAXLEVEL minlevel = MINLEVEL } P
 
