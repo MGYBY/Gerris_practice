@@ -652,9 +652,9 @@ static void face_fluxes (FttCellFace * face, GfsRiver * r)
 
   /* Riemann solver */
   gdouble * f = r->f;
-//   (* r->scheme) (r, uL, uR, f);
+  (* r->scheme) (r, uL, uR, f);
 // CHANGE due to slope coordinate
-  (* r->scheme) (r, uL, uR, f, face);
+//   (* r->scheme) (r, uL, uR, f, face);
 
   gdouble dt = gfs_domain_face_fraction (GFS_DOMAIN (r), face)*r->dt/h;
   GFS_VALUE (face->cell, r->flux[H]) -= dt*f[H];
