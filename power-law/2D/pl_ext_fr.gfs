@@ -111,11 +111,20 @@ Define MINLEVEL 4
 
     # Refine MAXLEVEL
     Refine ((x<1.0 || (pow((x-(XB+width/2.0)),2.0)+pow((y-(boxLength/2.0)),2.0)<pow(width/2.0*1.25,2.0))) ? MAXLEVEL : MINLEVEL)
-    AdaptGradient { istart = 1 istep = 1} {
-        cmax = 0.475e-5
+    # resolve bow-shock wave more efficiently
+    AdaptGradient { istep = 1} {
+        cmax = 2.0e-4
         cfactor = 2
         # cfactor = 4
         maxlevel = MAXLEVEL
+        minlevel = MINLEVEL
+    } P
+    AdaptGradient { istep = 1} {
+        cmax = 0.45e-5
+        cfactor = 2
+        # cfactor = 4
+#         weight = 10
+        maxlevel = x>(XB-width) ? MAXLEVEL : (MINLEVEL+1)
         minlevel = MINLEVEL
     } P
 
@@ -139,7 +148,20 @@ Define MINLEVEL 4
 
     OutputSimulation { step = 0.50 } snapshot-%g.gfs
     
-    OutputSolidForce { istep = 1 } f
+    # OutputSolidForce { istep = 1 } f
+    OutputSolidForce { istep = 1 } {
+        awk 'BEGIN{
+            nd = NORMALDEPTH;
+            nv = NORMALVELOCITY;
+            slope = sinTheta;
+            gravity = GRAV;
+            w = width;
+        }
+        {
+           if ($1 != "#")
+             print $1, $2, (slope*$1*nv/nd), (0.50*gravity*$2/(0.50*w*nd*nv^2));
+        }' >> f
+    }
 
     OutputLocation { step = 1.00 } slice-%g gaugeLoc
     OutputLocation { istep = 1 } runup 1.74497 0.377919 0.
