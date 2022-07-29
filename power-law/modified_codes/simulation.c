@@ -1655,7 +1655,8 @@ void gfs_physical_params_write (GfsPhysicalParams * p, FILE * fp)
   g_return_if_fail (p != NULL);
   g_return_if_fail (fp != NULL);
 
-  fprintf (fp, "{ g = %g L = %g", p->g, p->L);
+//   fprintf (fp, "{ g = %g L = %g", p->g, p->L);
+	fprintf (fp, "{ g = %g L = %g betaCoeff = %g", p->g, p->L, p->betaCoeff);
   if (p->alpha) {
     fputs (" alpha =", fp);
     gfs_function_write (p->alpha, fp);
