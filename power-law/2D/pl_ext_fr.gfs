@@ -146,7 +146,7 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
 
     AdvectionParams {
         gradient = gfs_center_sweby_gradient
-        cfl = 0.25
+        cfl = 0.35
         }
 
     # Refine MAXLEVEL
