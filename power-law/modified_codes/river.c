@@ -1239,7 +1239,14 @@ static void minimum_cfl (FttCell * cell, GfsRiver * r)
       int l;
       for (l = 0; l < r->nlayers; l++) {
 	gdouble uh = fabs (GFS_VALUE (cell, r->v[c + 1 + 2*l]));
-	gdouble cfl = vol/(fm*(uh/(r->dz[l]*h) + cg));
+	// gdouble cfl = vol/(fm*(uh/(r->dz[l]*h) + cg));
+  	gdouble cfl;
+  	if (r->betaPowerLaw > 1.0000001) {
+    		cfl = vol/(fm*(uh/(r->dz[l]*h) + sqrt(SQUARE(r->betaPowerLaw*uh)-(r->betaPowerLaw)*SQUARE(uh)+SQUARE(cg)*SQUARE(h))/h));
+  	}
+  	else {
+    		cfl = vol/(fm*(uh/(r->dz[l]*h) + cg));
+  	}
 	if (cfl < r->cfl)
 	  r->cfl = cfl;
       }
