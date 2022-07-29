@@ -211,9 +211,31 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
              print $1, $2, (slope*$1*nv/nd), (0.50*gravity*$2/(0.50*w*nd*nv^2));
         }' >> f
     }
+    
+    ##################### Maximum run-ups #######################
+    # maximum run-ups for regular shapes
+    OutputLocation { istep = 1 } runup 1.74497 0.377919 0.
+    # maximum run-ups for oblique frontal faces
+    EventList { istep = 1 } {
+    # "gauge" method for finding max run-up
+        OutputLocation {} obliqueSlice-%g RGaugeLoc
+
+        EventScript {} {
+            file1="$(ls  obliqueSlice-* | sort -V | tail -n1)"
+            awk 'BEGIN{a=0}
+                {
+                # in a typical location output file, $5 is P field
+                if ($1!="#" && $5>0+a)
+                    a=$5
+                if (NR==2)
+                    time=$1
+                }
+                END{ print time,a }' < "$file1" >> Rmax
+            rm obliqueSlice-*
+        }
+    }
 
     OutputLocation { step = 1.00 } slice-%g gaugeLoc
-    OutputLocation { istep = 1 } runup 1.74497 0.377919 0.
 
     GModule gfsview
     OutputView { istep = 50 } {
