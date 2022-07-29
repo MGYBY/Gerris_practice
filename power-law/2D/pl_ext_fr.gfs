@@ -37,6 +37,24 @@ Define EPSILONU 5e-5
 Define MAXLEVEL 8
 Define MINLEVEL 4
 
+# Rotated Square solid
+# Define CHARAWIDTH (width)
+# Define LEFTCOORD (XB)
+# Define CENTERCOORD (LYCENTER)
+# Define RIGHTCOORD (LEFTCOORD+1.0*CHARAWIDTH)
+# Define MIDCOORD (LEFTCOORD+1.0*CHARAWIDTH/2.0)
+# Define KSLOPE(x1,x2,y1,y2) (y2-y1)/(x2-x1)
+# Define BINTERCEPT(x1,x2,y1,y2) (x2*y1-x1*y2)/(x2-x1)
+# # calculation of apex coordinates of the triangle
+# Define TP1X (LEFTCOORD)
+# Define TP1Y (CENTERCOORD)
+# Define TP2X (MIDCOORD)
+# Define TP2Y (CENTERCOORD+0.50*CHARAWIDTH)
+# Define TP3X (RIGHTCOORD)
+# Define TP3Y (CENTERCOORD)
+# Define TP4X (MIDCOORD)
+# Define TP4Y (CENTERCOORD-0.50*CHARAWIDTH)
+
 NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     x = 0.5 y = 0.5 
 } {
@@ -77,6 +95,22 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     PhysicalParams { L = boxLength g = GRAVITYCOEFF betaCoeff = betaVar }
 
     # Solid (cube((XB+width/2.0), boxLength/2.0 ,0.0 , width))
+    # Rotated Square solid
+    # Solid ({
+#         double k1 = KSLOPE(TP1X,TP2X,TP1Y,TP2Y);
+#         double k2 = KSLOPE(TP2X,TP3X,TP2Y,TP3Y);
+#         double k3 = KSLOPE(TP3X,TP4X,TP3Y,TP4Y);
+#         double k4 = KSLOPE(TP4X,TP1X,TP4Y,TP1Y);
+#         double b1 = BINTERCEPT(TP1X,TP2X,TP1Y,TP2Y);
+#         double b2 = BINTERCEPT(TP2X,TP3X,TP2Y,TP3Y);
+#         double b3 = BINTERCEPT(TP3X,TP4X,TP3Y,TP4Y);
+#         double b4 = BINTERCEPT(TP4X,TP1X,TP4Y,TP1Y);
+#         double line1 = - (k1*x - y + b1);
+# 	    double line2 = - (k2*x - y + b2);
+#         double line3 = (k3*x - y + b3);
+#         double line4 = (k4*x - y + b4);
+#         return intersection (intersection (intersection (line1, line2), line3), line4);
+# })
     Solid (sphere((XB+width/2.0), (boxLength/2.0) ,0.0 , width/2.0))
     RefineSolid MAXLEVEL
 
