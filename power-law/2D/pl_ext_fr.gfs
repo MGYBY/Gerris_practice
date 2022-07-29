@@ -246,4 +246,6 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
 
 } {
 scheme = kurganovPowerLaw
+# to take care of "nearly dry" beds
+dry = DRY
 }
