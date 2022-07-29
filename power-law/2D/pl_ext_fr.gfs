@@ -20,8 +20,14 @@ Define NORMALDEPTH 0.002099551886
 Define NORMALVELOCITY 0.1433858
 
 Define width ((NORMALDEPTH)*75.0)
-Define domainLength (width*4.8*3.0)
-Define boxLength (domainLength/3.0)
+Define ASPECTRATIO 3
+Define NUMBOXY 3
+Define NUMBOXX 9
+Define NUMBOX 27
+Define NUMSEG 42
+Define LX (width*5.0*ASPECTRATIO)
+Define LY (width*5.0)
+Define boxLength (LX/NUMBOXX)
 Define XB ((pow(NORMALVELOCITY,2.0)/(GRAV*sinTheta))*50)
 Define REFINELENGTH ((pow(NORMALVELOCITY,2.0)/(GRAV*sinTheta))*100+width*3.00)
 
@@ -31,7 +37,7 @@ Define EPSILONU 5e-5
 Define MAXLEVEL 8
 Define MINLEVEL 4
 
-3 2 GfsRiver GfsBox GfsGEdge {
+NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     x = 0.5 y = 0.5 
 } {
 
@@ -135,7 +141,7 @@ Define MINLEVEL 4
 # 	minlevel = MINLEVEL
 #     } (fabs(VORT*dL/1.0))
 	# where VORT is defined in init
-	VORT = (P > DRY ? (dx("V") - dy("U")) : 0.0)
+	# VORT = (P > DRY ? (dx("V") - dy("U")) : 0.0)
 
     AdaptError { istart = 1 istep = 1 } { cmax = (NORMALDEPTH/225.0) maxlevel = MAXLEVEL minlevel = MINLEVEL } P
 
@@ -185,59 +191,3 @@ Define MINLEVEL 4
 } {
 scheme = kurganovPowerLaw
 }
-
-GfsBox {
-pid = 0
-left = Boundary {
-    BcDirichlet P depth_bc(t)
-    BcDirichlet U velocity_bc(t)
-    BcDirichlet V 0.0
-}
-top = Boundary {
-    BcNeumann P 0.0
-    BcNeumann U 0.0
-    BcNeumann V 0.0
-}
-bottom = Boundary {
-    BcNeumann P 0.0
-    BcNeumann U 0.0
-    BcNeumann V 0.0
-}
-}
-# 1th box above
-GfsBox {
-pid = 1
-top = Boundary {
-    BcNeumann P 0.0
-    BcNeumann U 0.0
-    BcNeumann V 0.0
-}
-bottom = Boundary {
-    BcNeumann P 0.0
-    BcNeumann U 0.0
-    BcNeumann V 0.0
-}
-}
-# 2th box above
-GfsBox {
-pid = 2
-right = Boundary {
-    BcNeumann P 0.0
-    BcNeumann U 0.0
-    BcNeumann V 0.0
-}
-top = Boundary {
-    BcNeumann P 0.0
-    BcNeumann U 0.0
-    BcNeumann V 0.0
-}
-bottom = Boundary {
-    BcNeumann P 0.0
-    BcNeumann U 0.0
-    BcNeumann V 0.0
-}
-}
-# last box above
-
-1 2 right
-2 3 right
