@@ -205,10 +205,11 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
             slope = sinTheta;
             gravity = GRAV;
             w = width;
+	    corr = betaVar;
         }
         {
            if ($1 != "#")
-             print $1, $2, (slope*$1*nv/nd), (0.50*gravity*$2/(0.50*w*nd*nv^2));
+             print $1, $2, (slope*$1*nv/nd), (0.50*gravity*$2/(0.50*w*nd*nv^2*corr));
         }' >> f
     }
     
