@@ -4,3 +4,4 @@ Modified Gerris codes to add the functionality.
 2. Added "slopeBoolean" feature: distinguish X- and Y- sweep of the dimension-by-dimension approach. <0.50: slope coordinate; >0.50: normal SWE formulation.
 3. Added "yu_limiter" feature: tunable generalized MINMOD limiter.
 4. Timestep determination based on eigenvalues of power-law system.
+5. Added "MC" limiter. Improved resolution.
