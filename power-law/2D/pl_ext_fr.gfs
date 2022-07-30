@@ -214,7 +214,13 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     
     ##################### Maximum run-ups #######################
     # maximum run-ups for regular shapes
-    OutputLocation { istep = 1 } runup 1.74497 0.377919 0.
+    # OutputLocation { istep = 1 } runup 1.74497 0.377919 0.
+    OutputLocation { istep = 1 } {
+    awk '{
+		if ($1 != "#")
+			print $1, $5;
+		}' > runup
+    } 3.491 0.392 0.
     # maximum run-ups for oblique frontal faces
     EventList { istep = 1 } {
     # "gauge" method for finding max run-up
