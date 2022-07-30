@@ -2557,7 +2557,7 @@ void gfs_pressure_force (FttCell * cell,
   if ((s = GFS_STATE (cell)->solid)) {
     gdouble size = ftt_cell_size (cell);
     // gdouble pv = gfs_cell_dirichlet_value (cell, p, -1)*size;
-    gdouble pv = gfs_cell_dirichlet_value (cell, p, -1)*size;
+    gdouble pv = gfs_cell_dirichlet_value (cell, p, -1)*gfs_cell_dirichlet_value (cell, p, -1)*size;
     FttComponent c;
 
 #if (!FTT_2D)
