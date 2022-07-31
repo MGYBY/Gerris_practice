@@ -97,7 +97,8 @@ static gdouble mc_limiter (gdouble r)
 
 static gdouble sgvl4_limiter (gdouble r)
 {
-  gdouble v1 = MIN (2.0, 2.0*r), v2 = MAX((4.0*r)/(r+3.0), (4.0*r)/(3.0*r+1));
+//   gdouble v1 = MIN (2.0, 2.0*r), v2 = MAX((4.0*r)/(r+3.0), (4.0*r)/(3.0*r+1));
+  gdouble v1 = MIN (2.0, 2.0*r), v2 = MAX((r*(r+4.5))/(r*r+4.5), (r*(4.5*r+1.0))/(4.5*r*r+1.0));
   v1 = MIN(v1, v2);
   return MAX(v1, 0.0);
 }
