@@ -594,6 +594,13 @@ static gdouble mc_limiter (gdouble r)
   return MAX(v1, 0.0);
 }
 
+static gdouble sgvl4_limiter (gdouble r)
+{
+  gdouble v1 = MIN (2.0, 2.0*r), v2 = MAX((4.0*r)/(r+3.0), (4.0*r)/(3.0*r+1));
+  v1 = MIN(v1, v2);
+  return MAX(v1, 0.0);
+}
+
 static gdouble center_limited_gradient (FttCell * cell,
 					FttComponent c,
 					guint v,
@@ -733,6 +740,28 @@ gdouble gfs_center_mc_gradient (FttCell * cell,
   g_return_val_if_fail (c < FTT_DIMENSION, 0.);
 
   return center_limited_gradient (cell, c, v, mc_limiter);
+}
+
+/**
+ * gfs_center_sgvl4_gradient:
+ * @cell: a #FttCell.
+ * @c: a component.
+ * @v: a #GfsVariable index.
+ *
+ * The gradient is normalized by the size of the cell and is limited
+ * using a sgvl4 limiter.
+ *
+ * Returns: the value of the @c component of the gradient of variable @v
+ * at the center of the cell.  
+ */
+gdouble gfs_center_sgvl4_gradient (FttCell * cell,
+				   FttComponent c,
+				   guint v)
+{
+  g_return_val_if_fail (cell != NULL, 0.);
+  g_return_val_if_fail (c < FTT_DIMENSION, 0.);
+
+  return center_limited_gradient (cell, c, v, sgvl4_limiter);
 }
 
 /**
