@@ -1033,6 +1033,8 @@ void gfs_advection_params_read (GfsAdvectionParams * par, GtsFile * fp)
       par->gradient = gfs_center_mc_gradient;
     else if (!strcmp (gradient, "gfs_center_yu_gradient"))
       par->gradient = gfs_center_yu_gradient;
+    else if (!strcmp (gradient, "gfs_center_sgvl4_gradient"))
+      par->gradient = gfs_center_sgvl4_gradient;
     else if (!strcmp (gradient, "none"))
       par->gradient = none;
     else if (fp->type != GTS_ERROR)
