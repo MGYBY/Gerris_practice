@@ -143,6 +143,9 @@ gdouble               gfs_center_yu_gradient     (FttCell * cell,
 gdouble               gfs_center_mc_gradient     (FttCell * cell,
 						     FttComponent c,
 						     guint v);
+gdouble               gfs_center_sgvl4_gradient     (FttCell * cell,
+						     FttComponent c,
+						     guint v);
 gdouble               gfs_center_regular_gradient   (FttCell * cell,
 						     FttComponent c,
 						     GfsVariable * v);
