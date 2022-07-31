@@ -5,3 +5,4 @@ Modified Gerris codes to add the functionality.
 3. Added "yu_limiter" feature: tunable generalized MINMOD limiter.
 4. Timestep determination based on eigenvalues of power-law system.
 5. Added "MC" limiter. Improved resolution.
+6. Added SGVL and SGVA limiters.
