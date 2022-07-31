@@ -95,6 +95,13 @@ static gdouble mc_limiter (gdouble r)
   return MAX(v1, 0.0);
 }
 
+static gdouble sgvl4_limiter (gdouble r)
+{
+  gdouble v1 = MIN (2.0, 2.0*r), v2 = MAX((4.0*r)/(r+3.0), (4.0*r)/(3.0*r+1));
+  v1 = MIN(v1, v2);
+  return MAX(v1, 0.0);
+}
+
 static gdouble center_limited_gradient_full (FttCell * cell,
 					     FttComponent c,
 					     guint v,
@@ -251,6 +258,13 @@ static gdouble center_mc_gradient (FttCell * cell,
 				      guint v)
 {
   return center_limited_gradient (cell, c, v, mc_limiter);
+}
+
+static gdouble center_sgvl4_gradient (FttCell * cell,
+				      FttComponent c,
+				      guint v)
+{
+  return center_limited_gradient (cell, c, v, sgvl4_limiter);
 }
 
 /**
@@ -1159,6 +1173,8 @@ static void river_run (GfsSimulation * sim)
     r->gradient = center_yu_gradient;
   else if (r->gradient == gfs_center_mc_gradient)
     r->gradient = center_mc_gradient;
+  else if (r->gradient == gfs_center_sgvl4_gradient)
+    r->gradient = center_sgvl4_gradient;
 
   gts_container_foreach (GTS_CONTAINER (r), (GtsFunc) fix_box_bc, r);
   gfs_simulation_refine (sim);
