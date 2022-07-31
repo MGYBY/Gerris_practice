@@ -897,6 +897,8 @@ void gfs_advection_params_write (GfsAdvectionParams * par, FILE * fp)
 	   "gfs_center_yu_gradient" :
      par->gradient == gfs_center_mc_gradient ?
 	   "gfs_center_mc_gradient" :
+	   par->gradient == gfs_center_sgvl4_gradient ?
+	   "gfs_center_sgvl4_gradient" :
 	   "none",
 	   par->flux == gfs_face_advection_flux ?
 	   "gfs_face_advection_flux" :
