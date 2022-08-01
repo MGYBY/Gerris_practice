@@ -118,7 +118,7 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
         # Initial normal flow
 	    P = NORMALDEPTH
 	    U = NORMALDEPTH*NORMALVELOCITY
-        OBSREF = pow((x-(XB+width/2.0)),2.0)+pow((y-(boxLength/2.0)),2.0)<pow(width/2.0*1.50,2.0) ? 1.0 : 0.0
+        OBSREF = pow((x-(XB+width/2.0)),2.0)+pow((y-(LY/2.0)),2.0)<pow(width/2.0*1.50,2.0) ? 1.0 : 0.0
         BEGININIT = x<0.50 ? 1.0 : 0.0
     }
 
