@@ -6,3 +6,4 @@ Modified Gerris codes to add the functionality.
 4. Timestep determination based on eigenvalues of power-law system.
 5. Added "MC" limiter. Improved resolution.
 6. Added SGVL and SGVA limiters.
+7. Added van-Leer with Klein's sharpening.
