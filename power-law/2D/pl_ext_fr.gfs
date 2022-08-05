@@ -55,6 +55,8 @@ Define MINLEVEL 4
 # Define TP4X (MIDCOORD)
 # Define TP4Y (CENTERCOORD-0.50*CHARAWIDTH)
 
+Define TOUTPUT 0.50
+
 NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     x = 0.5 y = 0.5 
 } {
@@ -143,9 +145,15 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     V = (P > DRY && fabs(Velocity) > EPSILONU) ? V/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
     P = (P > DRY ? P : 0.)
     }
+    
+    Init { step = TOUTPUT } {
+    		# Re number calc.
+		RE = rhoMud*(pow(Velocity, (2.0-nPower)))*(pow(P, nPower))/muN
+    }
 
     AdvectionParams {
         gradient = gfs_center_sweby_gradient
+	# gradient = gfs_center_vlSharp04_gradient
         cfl = 0.35
         }
 
@@ -195,7 +203,7 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     OutputTime { istep = 10 } stderr
     OutputTime { istep = 10 } ./time-stats.txt
 
-    OutputSimulation { step = 0.50 } snapshot-%g.gfs
+    OutputSimulation { step = TOUTPUT } snapshot-%g.gfs { variables = P,U,V,VORT,OBSREF,BEGININIT,RE }
     
     # OutputSolidForce { istep = 1 } f
     OutputSolidForce { istep = 1 } {
