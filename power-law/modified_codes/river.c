@@ -363,6 +363,51 @@ static gdouble max (gdouble a, gdouble b)
   return a > b ? a : b;
 }
 
+/*
+ * uL: left state vector [h,u,v,zb].
+ * uR: right state vector.
+ * g: acceleration of gravity.
+ * f: flux vector.
+ *
+ * Fills @f by solving an approximate Riemann problem using the HLLC
+ * scheme. See e.g. Liang, Borthwick, Stelling, IJNMF, 2004.
+ */
+static void riemann_hllc (const GfsRiver * r,
+			  const gdouble * uL, const gdouble * uR,
+			  gdouble * f)
+{
+  gdouble cL = sqrt (r->g*uL[H]), cR = sqrt (r->g*uR[H]);
+  gdouble ustar = (uL[U] + uR[U])/2. + cL - cR;
+  gdouble cstar = (cL + cR)/2. + (uL[U] - uR[U])/4.;
+  gdouble SL = uL[H] == 0. ? uR[U] - 2.*cR : min (uL[U] - cL, ustar - cstar);
+  gdouble SR = uR[H] == 0. ? uL[U] + 2.*cL : max (uR[U] + cR, ustar + cstar);
+
+  if (0. <= SL)
+    flux (uL, r->g, f);
+  else if (0. >= SR)
+    flux (uR, r->g, f);
+  else {
+    gdouble fL[3], fR[3];
+    flux (uL, r->g, fL);
+    flux (uR, r->g, fR);
+    f[H] = (SR*fL[H] - SL*fR[H] + SL*SR*(uR[H] - uL[H]))/(SR - SL);
+    f[U] = (SR*fL[U] - SL*fR[U] + SL*SR*(uR[H]*uR[U] - uL[H]*uL[U]))/(SR - SL);
+    gdouble SM = ((SL*uR[H]*(uR[U] - SR) - SR*uL[H]*(uL[U] - SL))/
+		  (uR[H]*(uR[U] - SR) - uL[H]*(uL[U] - SL)));
+    if (SL <= 0. && 0. <= SM)
+      f[V] = uL[V]*f[H];
+    else if (SM <= 0. && 0. <= SR)
+      f[V] = uR[V]*f[H];
+    else {
+      fprintf (stderr, "L: %g %g %g R: %g %g %g\n",
+	       uL[H], uL[U], uL[V],
+	       uR[H], uR[U], uR[V]);
+      fprintf (stderr, "SL: %g SR: %g SM: %g\n", SL, SR, SM);
+      g_assert_not_reached ();
+    }
+  }
+}
+
 #define SQUARE(l) (pow(l, 2.0))
 // CHANGE due to slope coordinate
 // TODO: integrate the slope coordinate feature
