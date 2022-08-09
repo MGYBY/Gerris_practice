@@ -258,7 +258,9 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     } view.gfv
 
     # OutputLocation { istep = 10 } Rmax 0.763 0.872 0.0
-
+    
+    EventBalance { istep = 10 } 0.20
+    OutputBalance { istep = 10 } balance
 } {
 scheme = kurganovPowerLaw
 # to take care of "nearly dry" beds
