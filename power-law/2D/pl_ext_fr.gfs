@@ -189,6 +189,8 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
 # 	maxlevel = MAXLEVEL
 # 	minlevel = MINLEVEL
 #     } (fabs(VORT*dL/1.0))
+	# use this trick to avoid complications at wavefronts
+	( (x>(XB-1.25*width) ) ? fabs(VORT*dL/1.0) : 0.0)
 	# where VORT is defined in init
 	# VORT = (P > DRY ? (dx("V") - dy("U")) : 0.0)
 
