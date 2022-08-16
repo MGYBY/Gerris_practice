@@ -7,3 +7,4 @@ Modified Gerris codes to add the functionality.
 5. Added "MC" limiter. Improved resolution.
 6. Added SGVL and SGVA limiters.
 7. Added van-Leer with Klein's sharpening.
+8. Added central-upwind scheme with numerical dissipation reduction (following Kurganov & Lin (2007)).
