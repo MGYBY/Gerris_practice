@@ -1,0 +1,140 @@
+# below this depth the flow is considered "dry"
+Define DRY 1.0e-5
+Define sinTheta 0.060
+Define cosTheta (pow((1.0-pow(sinTheta, 2.0)), 0.50))
+Define tanTheta (sinTheta/cosTheta)
+Define GRAV 9.81
+Define GRAVITYCOEFF (GRAV*cosTheta)
+Define nPower 0.30
+Define betaVar (2.0*(1.0+2.0*nPower)/(2.0+3.0*nPower))
+Define muN 150.0
+Define rhoMud 2130.0
+
+Define FROUDE 1.756
+Define NORMALDEPTH 0.380937
+Define NORMALVELOCITY 3.39152
+
+Define width ((NORMALDEPTH)*75.0)
+Define ASPECTRATIO (7.0/3.0)
+Define NUMBOXY 3
+Define NUMBOXX 7
+Define NUMBOX 21
+Define NUMSEG 32
+Define LX (width*5.0*ASPECTRATIO)
+Define LY (width*5.0)
+# Define boxLength (LX/NUMBOXX)
+Define XB ((pow(NORMALVELOCITY,2.0)/(GRAV*sinTheta))*12.0)
+Define REFINELENGTH ((pow(NORMALVELOCITY,2.0)/(GRAV*sinTheta))*100+width*3.00)
+Define OBSCENTER (XB+width/2.0)
+Define LYCENTER (LY/2.0)
+Define EDGELENGTH (width/pow(2, 0.50))
+
+Define EPSILONU 5e-5
+
+# mesh adaptivity parameters
+Define LEVEL 10
+
+# rotated suqare solid related geo
+Define SLOPE1 1.00
+Define SLOPE2 1.00
+Define CHARAWIDTH (width)
+Define LEFTCOORD (XB)
+Define CENTERCOORD (LYCENTER)
+Define RIGHTCOORD (LEFTCOORD+1.0*CHARAWIDTH)
+Define MIDCOORD (LEFTCOORD+1.0*CHARAWIDTH/2.0)
+Define KSLOPE(x1,x2,y1,y2) (y2-y1)/(x2-x1)
+Define BINTERCEPT(x1,x2,y1,y2) (x2*y1-x1*y2)/(x2-x1)
+# calculation of apex coordinates of the triangle
+Define TP1X (LEFTCOORD)
+Define TP1Y (CENTERCOORD)
+Define TP2X (MIDCOORD)
+Define TP2Y (CENTERCOORD+0.50*CHARAWIDTH)
+Define TP3X (RIGHTCOORD)
+Define TP3Y (CENTERCOORD)
+Define TP4X (MIDCOORD)
+Define TP4Y (CENTERCOORD-0.50*CHARAWIDTH)
+
+Define WARMUP 1.00
+
+Define TOUTPUT 1.0
+
+
+1 0 GfsRiver GfsBox GfsGEdge {
+    x = 0.5
+} {
+
+    # Analytical solution, see Sampson, Easton, Singh, 2006
+    Global {
+        // Parameters
+        static double amplitude = 0.20;
+        static double distPeriod = 18.102;
+
+        // x-source
+        static double powerLawX(double h, double qx, double qy) {
+            double vel=pow((pow(qx, 2.0)+pow(qy, 2.0)), 0.50)/h;
+            return (GRAVITYCOEFF*h*(sinTheta/cosTheta)+(-1.0)*(muN/rhoMud)*(qx/h)/vel*(pow((((1.0+2.0*nPower)/nPower)*vel/h), nPower)));
+        }
+
+        // y-source
+        static double powerLawY(double h, double qx, double qy) {
+            double vel=pow((pow(qx, 2.0)+pow(qy, 2.0)), 0.50)/h;
+            return ((-1.0)*(muN/rhoMud)*(qy/h)/vel*(pow((((1.0+2.0*nPower)/nPower)*vel/h), nPower)));
+        }
+
+        // depth (p) wave-maker
+        static double depth_bc(double t) {
+            if ((t-WARMUP)<distPeriod/2.0 && (t-WARMUP)>0) return (NORMALDEPTH*(1.0+amplitude*sin(2.0*M_PI*(t-WARMUP)/distPeriod)));
+            else return (NORMALDEPTH);
+        }
+
+        // momentum (U) wave-maker
+        static double velocity_bc(double t) {
+            if ((t-WARMUP)<distPeriod/2.0 && (t-WARMUP)>0) return (FROUDE*pow((GRAVITYCOEFF*pow((NORMALDEPTH*(1.0+amplitude*sin(2.0*M_PI*(t-WARMUP)/distPeriod))),3.0)),0.50));
+            else return (NORMALVELOCITY*NORMALDEPTH);
+        }
+    }
+
+    PhysicalParams { L = LX g = GRAVITYCOEFF betaCoeff = betaVar }
+    RefineSurface LEVEL (y - LX*(0.5 - 1./pow(2,LEVEL)))
+    InitMask {} (y < LX*(0.5 - 1./pow(2,LEVEL)))
+    Init {} {
+        # Initial normal flow
+	    P = NORMALDEPTH
+	    U = NORMALDEPTH*NORMALVELOCITY
+#         BEGININIT = x<52.5 ? 1.0 : 0.0
+    }
+    Init { istep = 1 } {
+	# implicit method
+    U = (P > DRY && fabs(U/P) > EPSILONU) ? (U+dt*tanTheta*GRAVITYCOEFF*P)/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow((U/P), nPower-1)/P) :0.0
+    P = (P > DRY ? P : 0.)
+    }
+    # Better convergence rates are obtained at lower CFL
+    AdvectionParams {
+#         gradient = gfs_center_sweby_gradient
+		gradient = gfs_center_van_leer_gradient
+# 		gradient = gfs_center_vlSharp04_gradient
+        cfl = 0.359
+        }
+
+    OutputTime { istep = 10 } stderr
+    OutputTime { istep = 10 } ./time-stats.txt
+
+    Time { end = 60.0 }
+    OutputSimulation { step = 1.0 } simText-%g.txt { format = text variables = P,U }
+
+} {
+    scheme = kurganovPowerLaw
+    dry = 1e-6
+}
+GfsBox {
+    left = Boundary {
+ 					     BcDirichlet P depth_bc(t)
+ 					     BcDirichlet U velocity_bc(t)
+#  					     BcDirichlet V 0.0
+ 					 }
+    right = Boundary {
+ 					     BcNeumann P 0.0
+ 					     BcNeumann U 0.0
+#  					     BcNeumann V 0.0
+ 					 }
+}
