@@ -107,6 +107,8 @@ Define TOUTPUT 1.0
 	# implicit method
     U = (P > DRY && fabs(U/P) > EPSILONU) ? (U+dt*tanTheta*GRAVITYCOEFF*P)/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow((U/P), nPower-1)/P) :0.0
     P = (P > DRY ? P : 0.)
+    
+    RE = rhoMud*(pow(Velocity, (2.0-nPower)))*(pow(P, nPower))/muN
     }
     # Better convergence rates are obtained at lower CFL
     AdvectionParams {
@@ -120,7 +122,11 @@ Define TOUTPUT 1.0
     OutputTime { istep = 10 } ./time-stats.txt
 
     Time { end = 60.0 }
-    OutputSimulation { step = 1.0 } simText-%g.txt { format = text variables = P,U }
+    OutputSimulation { step = 1.0 } simText-%g.txt { format = text variables = P,U, RE }
+    
+    OutputScalarStats { istep = 20 } { awk '{print $3, $11}' > hMax.dat } { v = P }
+    OutputScalarStats { istep = 20 } { awk '{print $3, $11}' > velMax.dat } { v = Velocity }
+    OutputScalarStats { istep = 20 } { awk '{print $3, $11}' > reMax.dat } { v = RE }
 
 } {
     scheme = kurganovPowerLaw
