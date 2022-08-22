@@ -65,7 +65,8 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     Global {
         // Parameters
         static double amplitude = 0.20;
-        static double distPeriod = 1.00;
+        // static double distPeriod = 1.00;
+	static double distPeriod = 3.1415926*NORMALDEPTH/(sinTheta*NORMALVELOCITY);
 
         // x-source
         static double powerLawX(double h, double qx, double qy) {
