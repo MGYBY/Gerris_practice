@@ -67,7 +67,8 @@ Define TOUTPUT 1.0
     Global {
         // Parameters
         static double amplitude = 0.20;
-        static double distPeriod = 18.102;
+        // static double distPeriod = 18.102;
+	static double distPeriod = 3.1415926*NORMALDEPTH/(sinTheta*NORMALVELOCITY);
 
         // x-source
         static double powerLawX(double h, double qx, double qy) {
