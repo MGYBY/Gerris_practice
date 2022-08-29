@@ -91,9 +91,13 @@ Define LARGETOPO 10.0
 	    Zb = (x<0.825 && x>0.80 && y>0.75) ? LARGETOPO : Zb
 
 	    OBSREF = pow((x-1.4125),2.0)+pow((y-0.60),2.0)<pow(0.178,2.0) ? 1.0 : 0.0
+	    
+	    Pmax = 0.0
     }
 
     Init { istep = 1 } {
+    
+    Pmax = (P > DRY && H > Pmax ? H : Pmax)
 
     # # TVD RK3
     # # follow the integration procedure suggested by E.F.Toro
@@ -151,6 +155,11 @@ Define LARGETOPO 10.0
 	cmax = 0
 	maxlevel = MAXLEVEL
     } OBSREF
+    
+    AdaptError { istep = 1 } {
+    	cmax = 0.0006
+    	maxlevel = MAXLEVEL
+    } Pmax
       
       #(P < DRY ? 0. : P + Zb)
 
