@@ -600,7 +600,8 @@ for( k = 1; k <= c; k = k + 1 ) {
 	}
 }
 
-// connectivity summary, to be deleted
-printf("\n\n\n\nThe Number of connection is: %d",connection);
+// box and connectivity summary, to be deleted
+printf("\n\n\n\nThe Number of boxes is: %d", (a*b*c));
+printf("\n\n\n\nThe Number of connection is: %d", connection);
 return 0;
 }
