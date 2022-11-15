@@ -76,7 +76,7 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     double hydroPressureDist(double y, double x, double Lx, double amp, double hn, double rhoFluid) {
         double gy = GRAVITYCOEFF*CHANNELCOS;
         // double hDist = hn*(1.0+amp*sin(2.0*M_PI*x/Lx));
-        # if (y<HDIST(x)) return (rhoFluid*gy*y);
+        // if (y<HDIST(x)) return (rhoFluid*gy*y);
 	if (y<HDIST(x)) return (rhoFluid*gy*(HDIST(x)-y));
         else return 0.0;
     }
