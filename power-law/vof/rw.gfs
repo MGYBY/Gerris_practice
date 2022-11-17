@@ -128,6 +128,14 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     # VariableTracerVOF T
     # a more consistent VOF method
     VariableTracerVOFHeight T
+    
+    # passive scalar transport
+    VariableTracerVOF Ti
+    InitFraction Ti ({
+	    double top = TRACERTOPYCOORD - y;
+	    double bottom = y - TRACERBOTTOMYCOORD;
+	    return union (top, bottom);
+    })
 
     VariablePosition X T x
     VariablePosition Y T y
@@ -142,6 +150,13 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     # note that if parallelism is used, sufficient partition should be used 
     Solid (cube(LDOMAIN/2.0, (2.50*(NORMALDEPTH)+0.5*LDOMAIN*2), 0.0, LDOMAIN*2))
     RefineSolid MAXLEVEL
+    
+    # more control on the top BC
+    SurfaceBc P Dirichlet (-1.0*AIRRHO*CHANNELCOS*GRAVITYCOEFF*(2.36-1.0)*NORMALDEPTH)
+    SurfaceBc U Neumann 0.0
+    SurfaceBc V Neumann 0.0
+    SurfaceBc T Neumann 0.0
+    SurfaceBc Ti Neumann 0.0
 
     # Bingham rheology viscosity
     SourceViscosity {} {
