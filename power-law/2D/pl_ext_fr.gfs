@@ -148,8 +148,8 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     # U = (P<(NORMALDEPTH*0.05) && Velocity > (12.0*NORMALVELOCITY)) ? 0.0 : U
     # V = (P<(NORMALDEPTH*0.05) && Velocity > (12.0*NORMALVELOCITY)) ? 0.0 : V
     # maybe another more reasonable checking strategy
-    U = (Velocity < (12.0*NORMALVELOCITY) || P>0.9*NORMALDEPTH ) ? U : 12.0*NORMALVELOCITY*U*P/(Velocity)
-    V = (Velocity < (12.0*NORMALVELOCITY) || P>0.9*NORMALDEPTH ) ? V : 12.0*NORMALVELOCITY*V*P/(Velocity)
+    U = (Velocity < (12.0*NORMALVELOCITY) || P>0.9*NORMALDEPTH ) ? U : 12.0*NORMALVELOCITY*U/(Velocity)
+    V = (Velocity < (12.0*NORMALVELOCITY) || P>0.9*NORMALDEPTH ) ? V : 12.0*NORMALVELOCITY*V/(Velocity)
     
     # implicit method
     U = (P > DRY && fabs(Velocity) > EPSILONU) ? (U+dt*tanTheta*GRAVITYCOEFF*P)/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
