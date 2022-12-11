@@ -86,6 +86,10 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     double heightDist (double x,  double hn, double Lx, double amp) {
         return (HDIST(x));
     }
+    
+    double hydroPressure_init (double y) {
+        return (y<=HDIST(x) ? (MUDRHO*(GRAVITYCOEFF*CHANNELCOS)*(HDIST(x)-y)) : 0.0-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(y-HDIST(x)));
+    }
 
     double hydroPressureDist(double y, double x, double Lx, double amp, double hn, double rhoFluid) {
         double gy = GRAVITYCOEFF*CHANNELCOS;
@@ -176,7 +180,9 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
         # Initial normal flow
 	U = velDist(x, y, NORMALDEPTH, NORMALVEL, LDOMAIN, DISTAmp)
     V = 0.0
-    P = hydroPressureDist(y,x,LDOMAIN,DISTAmp,NORMALDEPTH,MUDRHO)
+    # not correct here!
+    # P = hydroPressureDist(y,x,LDOMAIN,DISTAmp,NORMALDEPTH,MUDRHO)
+    
     }
 
     # Track a "band" around the interface to resolve surface gradients
