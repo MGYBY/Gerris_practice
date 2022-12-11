@@ -75,6 +75,10 @@ Define HDIST(t) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*t/DISTPERIOD)))
         double hydroPressureDist(double y, double t) {
             return (y<HDIST(t) ? (MUDRHO*(GRAVITYCOEFF*CHANNELCOS)*y) : 0.0);
         }
+	
+	double hydroPressure_init (double y) {
+        return (y<=NORMALDEPTH ? (MUDRHO*(GRAVITYCOEFF*CHANNELCOS)*(NORMALDEPTH-y)) : 0.0-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(y-NORMALDEPTH));
+    	}
 
         double var (double Tf, double min, double max) {
         return (min + CLAMP(Tf, 0, 1)*(max - min));
@@ -154,7 +158,10 @@ Define HDIST(t) (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*t/DISTPERIOD)))
     # setup velocity in this way to reduce shear instability between two phases
 	U = y<NORMALDEPTH ? ((1.0+2.0*POWERLAWN)/(1.0+POWERLAWN)*NORMALVEL*(1.0-pow((1.0-y/NORMALDEPTH), (1.0+POWERLAWN)/POWERLAWN))) : ((1.0+2.0*POWERLAWN)/(1.0+POWERLAWN)*NORMALVEL*(1.0))
     V = 0.0
-    P = y<NORMALDEPTH ? (MUDRHO*(GRAVITYCOEFF*CHANNELCOS)*y) : 0.0
+    
+    # not correct here
+    # P = y<NORMALDEPTH ? (MUDRHO*(GRAVITYCOEFF*CHANNELCOS)*y) : 0.0
+    P = hydroPressure_init (y)
     }
 
     # Track a "band" around the interface to resolve surface gradients
