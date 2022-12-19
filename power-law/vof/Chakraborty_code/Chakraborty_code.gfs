@@ -1,0 +1,95 @@
+# case plan with shear-thinning fluid
+# pb detected: it lacks a root of 2 in the definition of D2
+# values of the parameters
+Define REYNOLDS 50.
+Define BOND 61.097250694361961
+Define RATIO 21.583246059529323
+Define N 0.607
+# computational domain: length and depth level of mesh
+Define LEVEL 11
+Define LENGTH 60.
+# plan: height and angle of inclination (in degrees)
+Define RADIUS 0.5
+Define ANGLE 15
+# density in the liquid (1) and gas (1 / 100)
+Define RHO(T) (T + 1./100.*(1. - T))
+# body of the function: Navier-Stokes(a box with a periodicity of flow)
+1 1 GfsSimulation GfsBox GfsGEdge {} {
+# parameters of the computational domain length, specific volume
+# (gravity = 1 by default)
+PhysicalParams { L = LENGTH }
+PhysicalParams { alpha = 1./RHO(T) }
+# refinement default domain
+Refine 6
+# refinement for a maximum surface area < 2 times the height of
+# the liquid + Plan
+Refine (y < 2.*(RADIUS + 1.) ? LEVEL : 6)
+Refine (y < RADIUS + 1.1 && y > RADIUS+ 0.9 ? LEVEL+2 : 6)
+# definition of map in domain
+Solid (y - RADIUS)
+# interface definition, the variable ‘radius’ Position and function
+VariableTracerVOF T
+VariableCurvature K T Kmax
+VariablePosition Y T y
+# definition of surface tension
+SourceTension T BOND K
+# initialization of the interface
+InitFraction T (1. + RADIUS + 0.1*sin(2.*M_PI/LENGTH*x) - y)
+# initialization of the semi-parabolic velocity in the liquid
+Init {} {
+    U = {
+    y = y - RADIUS;
+    if (y < 1.)
+        return (N/(N+1.))*(1.- exp((N+1.)*log(1- y)/N))*sqrt(REYNOLDS);
+    else
+        return sqrt(REYNOLDS)*N/(N+1.);
+}
+}
+# definition of volume forces
+Source U T
+Source V -T/tan(ANGLE*M_PI/180.)
+# definition of viscosity
+SourceViscosity {} {
+    double mu, mumax;
+    double m;
+    mu = exp (-0.5*N*log (REYNOLDS));
+    mumax = RATIO/sqrt(REYNOLDS);
+    if (D2 > 0.)
+        m = mu*exp ((N - 1.)*log (sqrt(2.)*D2));
+    else
+        m = mumax;
+    return RHO(T)*MIN(m, mumax);
+} {
+    # Crank-Nicholson does not converge for these cases, we need backward Euler
+    # (beta = 0.5 -> Crank-Nicholson, beta = 1 -> backward Euler)
+    beta = 1
+}
+# adaptation of the mesh according to the vorticity
+AdaptVorticity { istep = 1 } { maxlevel = LEVEL cmax = 1 }
+# adaptation of the mesh in the liquid
+AdaptFunction { istep = 1 } { cmax = 0 maxlevel = (LEVEL - 3) } (T > 0.)
+# adaptation of the mesh on the free surface
+AdaptFunction { istep = 1 } {
+    cmax = 0.
+    maxlevel = LEVEL
+    cfactor = 2
+} (T > 0. && T < 1. ? Kmax*dL : 0)
+# results: standards enable the position and velocity in the fluid
+OutputScalarNorm { istep = 1 } y { v = Y }
+OutputScalarNorm { istep = 1 } u { v = U*T }
+OutputScalarNorm { istep = 1 } v { v = V*T }
+# results: average height of the liquid
+OutputScalarNorm { istep = 1 } h { v = T }
+# graphical results for Gfsview
+OutputSimulation { step = 5 } sim-%lf.gfs
+EventScript { step = 5 } { gzip -f -q sim-*.gfs }
+# graphical results to form a video
+OutputSimulation { step = 0.1 } stdout
+EventScript { step = 0.1 } { echo "Save stdout { width = 1024 height = 1024 }" }
+}
+# boundary condition of the domain (Dirichlet condition on the map)
+GfsBox {
+top = Boundary { BcDirichlet U 0 }
+}
+# periodicity of the flow (from right to left)
+1 1 right
