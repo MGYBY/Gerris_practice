@@ -1,0 +1,135 @@
+# below this depth the flow is considered "dry"
+Define DRY 1.0e-5
+Define sinTheta (0.05011*1.0)
+Define cosTheta (pow((1.0-pow(sinTheta, 2.0)), 0.50))
+Define tanTheta (sinTheta/cosTheta)
+Define GRAV 9.81
+Define GRAVITYCOEFF (GRAV*cosTheta)
+
+Define LX (41.01)
+Define NUMBOX 1
+Define LBOX (LX/NUMBOX)
+
+Define FROUDE 3.71
+Define NORMALDEPTH 0.00798
+Define NORMALVELOCITY (FROUDE*pow((GRAVITYCOEFF*NORMALDEPTH), 0.50))
+
+Define CF (2.0*GRAV*sinTheta*NORMALDEPTH/pow(NORMALVELOCITY,2.0))
+
+Define EPSILONU 5e-5
+
+# mesh adaptivity parameters
+Define LEVEL 12
+
+Define WARMUP 0.00
+
+Define TOUTPUT 0.20
+
+1 0 GfsRiver GfsBox GfsGEdge {
+    x = 0.5
+} {
+
+    # Analytical solution, see Sampson, Easton, Singh, 2006
+    Global {
+        // Parameters
+        static double amplitude = 0.20;
+        // static double distPeriod = 18.102;
+	static double distPeriod = 6.078*NORMALDEPTH/(sinTheta*NORMALVELOCITY);
+
+        // depth (p) wave-maker
+        static double depth_bc(double t) {
+            if ((t-WARMUP)<distPeriod/2.0 && (t-WARMUP)>0) return (NORMALDEPTH*(1.0+amplitude*sin(2.0*M_PI*(t-WARMUP)/distPeriod)));
+            else return (NORMALDEPTH);
+        }
+
+        // momentum (U) wave-maker
+        static double velocity_bc(double t) {
+            if ((t-WARMUP)<distPeriod/2.0 && (t-WARMUP)>0) return (FROUDE*pow((GRAVITYCOEFF*pow((NORMALDEPTH*(1.0+amplitude*sin(2.0*M_PI*(t-WARMUP)/distPeriod))),3.0)),0.50));
+            else return (NORMALVELOCITY*NORMALDEPTH);
+        }
+    }
+
+    PhysicalParams { L = LBOX g = GRAVITYCOEFF }
+    RefineSurface LEVEL (y - LX*(0.5 - 1./pow(2,LEVEL)))
+    InitMask {} (y < LX*(0.5 - 1./pow(2,LEVEL)))
+    Init {} {
+        # Initial normal flow
+	    P = NORMALDEPTH
+	    U = NORMALDEPTH*NORMALVELOCITY
+#         BEGININIT = x<52.5 ? 1.0 : 0.0
+    }
+    Init { istep = 1 } {
+    # implicit quadratic bottom friction with coefficient based on normal flow
+# 	U = (P > DRY ? (U + GRAV * sinTheta * P * dt)/(1. + dt*0.50*CF*Velocity/P) : 0.)
+#     P = (P > DRY ? P : 0.)
+
+    # TVD RK3
+    # follow the integration procedure suggested by E.F.Toro
+    # first stage
+	UMed1 = (P > DRY ? U + dt * (GRAV * sinTheta * P - 0.50*CF*Velocity*U/P) : 0.)
+
+	# second stage
+	UMed2 = (P > DRY ? (3.0/4.0)*U + (1.0/4.0)*UMed1 + (1.0/4.0)*dt*(GRAV * sinTheta * P - 0.50*CF*pow(pow(UMed1,2.0),0.50)*UMed1/pow(P,2.0)) : 0.)
+
+	# third stage
+	U = (P > DRY ? (1.0/3.0)*U+(2.0/3.0)*UMed2+(2.0/3.0)*dt*(GRAV * sinTheta * P - 0.50*CF*pow(pow(UMed2,2.0),0.50)*UMed2/pow(P,2.0)) : 0.)
+    
+#     RE = rhoMud*(pow(Velocity, (2.0-nPower)))*(pow(P, nPower))/muN
+    }
+    # Better convergence rates are obtained at lower CFL
+    AdvectionParams {
+#         gradient = gfs_center_sweby_gradient
+		gradient = gfs_center_van_leer_gradient
+# 		gradient = gfs_center_vlSharp04_gradient
+        cfl = 0.399
+        }
+
+    OutputTime { istep = 10 } stderr
+    OutputTime { istep = 10 } ./time-stats.txt
+
+    Time { end = 45.0 }
+    OutputSimulation {start = 20.0 step = TOUTPUT} simText-%g.txt { format = text variables = P,U }
+    
+    OutputScalarStats { istep = 20 } { awk '{print $3, $11}' > hMax.dat } { v = P }
+    OutputScalarStats { istep = 20 } { awk '{print $3, $11}' > velMax.dat } { v = Velocity }
+
+} {
+    scheme = hllc
+    dry = 1e-6
+}
+
+# GfsBox {
+#     left = Boundary {
+#  					     BcDirichlet P depth_bc(t)
+#  					     BcDirichlet U velocity_bc(t)
+# #  					     BcDirichlet V 0.0
+#  					 }
+# }
+#
+# GfsBox {
+#
+# }
+#
+# GfsBox {
+#     right = Boundary {
+#  					     BcNeumann P 0.0
+#  					     BcNeumann U 0.0
+# #  					     BcNeumann V 0.0
+#  					 }
+# }
+#
+# 1 2 right
+# 2 3 right
+
+GfsBox {
+    left = Boundary {
+ 					     BcDirichlet P depth_bc(t)
+ 					     BcDirichlet U velocity_bc(t)
+#  					     BcDirichlet V 0.0
+ 					 }
+    right = Boundary {
+ 					     BcNeumann P 0.0
+ 					     BcNeumann U 0.0
+#  					     BcNeumann V 0.0
+ 					 }
+}
