@@ -96,7 +96,7 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
 	    double mu_max = 60000.0;
 
 	    if (d2 > 0.)
-		m = MUREF*exp ((N - 1.)*log (d2));
+		m = MUREF*exp ((N - 1.)*log (d2*pow(2,0.5)));
 	    else {
 		    if (N < 1.) m = mu_max;
 		    else m = N == 1. ? MUREF : 0.;
