@@ -175,7 +175,7 @@ event friction(i++)
           }
 
           //linearized backeard Euler
-          // q[] = (h[]>dryThreshold && u[]>uThreshold) ? (0.0) : 0.0;
+          // q[] = (h[]>dryThreshold && u[]>uThreshold) ? ((q[]+dt*(gp*h[]*so+(1./rhoFluid)*(-1.*tauC)))/(1.+dt*muN/rhoFluid*pow(q[],(nCoeff-1.))*pow((pow((rhoFluid*gp*so),2.0)*(nCoeff+1.)*(2.*nCoeff+1.))/((rhoFluid*gp*so*h[]-tauC)*(nCoeff*(nCoeff+1.)*rhoFluid*h[]*gp*so+nCoeff*nCoeff*tauC)),nCoeff))) : 0.0;
           // uMed = u.x[] + dt * chezyBedFriction(u.x[], h[], cf);
           // uMed = (3. / 4.) * u.x[] + (1. / 4.) * uMed + (1. / 4.) * dt * chezyBedFriction(uMed, h[], cf);
           // u.x[] = (1. / 3.) * u.x[] + (2. / 3.) * uMed + (2. / 3.) * dt * chezyBedFriction(uMed, h[], cf);
