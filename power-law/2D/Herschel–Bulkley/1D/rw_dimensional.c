@@ -138,6 +138,7 @@ event calcDepthGrad(i++)
           depthGrad[] = fabs(h[-1]-h[1])/Delta;
           // inletRef[] = (t<=5 && x<=inletRefLen) ? 1.0 : 0.0;
           u[] = (h[]>dryThreshold && u[]>uThreshold) ? q[]/h[] : 0.0;
+          re[] = 8.0*rhoFluid*pow(u[],2.0)/(tauC+muN*pow((2.0*u[]/h[]),nCoeff));
      }
 }
 
@@ -201,9 +202,9 @@ event hmax(i+=20)
                     maxDepthVel = u[];
                }
      }
-     // stats s1 = statsf (re);
-     // fprintf(fp2, "%g %g %g %g %g \n", t, maxDepth, maxDepthLocX, maxDepthVel, s1.max);
-     fprintf(fp2, "%g %g %g %g \n", t, maxDepth, maxDepthLocX, maxDepthVel);
+     stats s1 = statsf (re);
+     fprintf(fp2, "%g %g %g %g %g \n", t, maxDepth, maxDepthLocX, maxDepthVel, s1.max);
+//      fprintf(fp2, "%g %g %g %g \n", t, maxDepth, maxDepthLocX, maxDepthVel);
      fclose(fp2);
 }
 
@@ -264,8 +265,8 @@ event output(t = 0; t <= simTime; t += OUTPUTTIME)
      sprintf(name, "out-%g.txt", t);
      FILE *fp = fopen(name, "w");
      foreach ()
-          // fprintf(fp, "%g %g %g %g \n", x, h[], u.x[], re[]);
-          fprintf(fp, "%g %g %g %g\n", x, h[], q[], u[]);
+          fprintf(fp, "%g %g %g %g %g \n", x, h[], q[], u[], re[]);
+//           fprintf(fp, "%g %g %g %g\n", x, h[], q[], u[]);
      fprintf(fp, "\n");
      fclose(fp);
 }
