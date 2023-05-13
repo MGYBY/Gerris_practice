@@ -145,7 +145,7 @@ event friction(i++)
           // }
 
           //linearized backward Euler
-          u.x[] = ((u.x[]>uThreshold)&&(h[]>dryThreshold)&&(h[]>cStar)) ? ((u.x[]+dt*(1.0-cStar/h[]))/(1.0+dt*(1.-cStar)*pow((u.x[]*h[]),(nCoeff-1.))*pow((((1.-cStar)*(nCoeff+1.+nCoeff*cStar))/((h[]-cStar)*((nCoeff+1.)*h[]+nCoeff*cStar))),nCoeff))) : 0.0;
+          u.x[] = ((u.x[]>uThreshold)&&(h[]>dryThreshold)&&(h[]>cStar)) ? ((u.x[]+dt*(1.0-cStar/h[]))/(1.0+dt*(1.-cStar)*pow((u.x[]*h[]),(nCoeff-1.))*pow((((1.-cStar)*(nCoeff+1.+nCoeff*cStar))/((h[]-cStar)*((nCoeff+1.)*h[]+nCoeff*nCoeff*cStar))),nCoeff))) : 0.0;
           
           // uMed = u.x[] + dt * chezyBedFriction(u.x[], h[], cf);
           // uMed = (3. / 4.) * u.x[] + (1. / 4.) * uMed + (1. / 4.) * dt * chezyBedFriction(uMed, h[], cf);
