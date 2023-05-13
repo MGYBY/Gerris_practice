@@ -129,7 +129,7 @@ event calcDepthGrad(i++)
 static double hbFriction(double q, double h, double n, double cPrime)
 {
      double rhs;
-     rhs = h-(cPrime+(1.-cPrime)*pow((q*(((1.-cPrime)*(n+1.+n*cPrime))/((h-cPrime)*((n+1)*h+n*cPrime)))), n));
+     rhs = h-(cPrime+(1.-cPrime)*pow((q*(((1.-cPrime)*(n+1.+n*cPrime))/((h-cPrime)*((n+1)*h+n*n*cPrime)))), n));
      return rhs;
 }
 
