@@ -110,9 +110,8 @@ int main()
 }
 
 scalar te[], re[];
-// scalar inletRef[];
 scalar depthGrad[], inletRef[];
-// scalar u[];
+scalar qPrev[], upPrev[];
 
 event init(i = 0)
 {
@@ -137,7 +136,7 @@ event init(i = 0)
 
 event calcDepthGrad(i++)
 {
-     FILE *fp1 = fopen("debugTimeStp", "a+");
+//      FILE *fp1 = fopen("debugTimeStp", "a+");
 
      foreach()
      {
@@ -146,9 +145,9 @@ event calcDepthGrad(i++)
           // re[] = 8.0*rhoFluid*pow(u[],2.0)/(tauC+muN*pow((2.0*u[]/h[]),nCoeff));
      }
 
-     fprintf(fp1, "%d \n", i);
+//      fprintf(fp1, "%d \n", i);
 
-     fclose(fp1);
+//      fclose(fp1);
 }
 
 static double signNum(double x) {
@@ -196,14 +195,18 @@ event friction(i++)
           // rk3tvd
           // wet bed && not too slow && ho<h
           if (h[] > (normalDepth/1000.0) && up[]>(normalUp/1000.0) && (3.0*(h[]-q[]/up[]))<h[]) {
-               // Fixme: modify to exact formulation of RK3TVD
+               // save the previous time step
+               qPrev[] = q[];
+               // upPrev[] = up[];
+
+               // source-term integration
                qMed = q[] + dt * hbFriction1(h[], q[], up[]);
                qMed = (3.0/4.0)*q[] + (1.0/4.0)*qMed + (1.0/4.0)*dt*hbFriction1(h[], qMed, up[]);
                q[] = (1.0/3.0)*q[]+(2.0/3.0)*qMed+(2.0/3.0)*dt*hbFriction1(h[], qMed, up[]);
 
-               upMed = up[] + dt * hbFriction2(h[], q[], up[]);
-               upMed = (3.0/4.0)*up[] + (1.0/4.0)*upMed + (1.0/4.0)*dt*hbFriction2(h[], q[], upMed);
-               up[] = (1.0/3.0)*up[]+(2.0/3.0)*upMed+(2.0/3.0)*dt*hbFriction2(h[], q[], upMed);
+               upMed = up[] + dt * hbFriction2(h[], qPrev[], up[]);
+               upMed = (3.0/4.0)*up[] + (1.0/4.0)*upMed + (1.0/4.0)*dt*hbFriction2(h[], qPrev[], upMed);
+               up[] = (1.0/3.0)*up[]+(2.0/3.0)*upMed+(2.0/3.0)*dt*hbFriction2(h[], qPrev[], upMed);
           }
           else {
                q[] = 0.0;
@@ -229,7 +232,7 @@ event hmax(i+=20)
 {
      double maxDepth = 0.0;
      double maxDepthLocX = 0.0;
-     double maxDepthVel = 0.0;
+//      double maxDepthVel = 0.0;
      FILE *fp2 = fopen("maxDepth", "a+");
      foreach ()
      {
