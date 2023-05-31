@@ -74,15 +74,44 @@ void vertical_viscosity (Point point, scalar h, scalar s, double dt)
      definition of viscosity as a function of shear
      $$\nu \rightarrow \nu_{eq}(\frac{\partial u}{\partial z},\nu)$$
      */
-    for (int l = 1; l < nl - 1; l++) {
-        double h12 = (h[0,0,l-1] + h[0,0,l])/2;
-      //  press -= G*h[0,0,l]/2;
-        double shear = (h12>0? (u[l]-u[l-1])/h12: HUGE);
-        // nueq[l]= nu_eq(shear,press);
-        nueq[l]= nu_eq(shear);
-        // press -= G*h[0,0,l] ;
+//     for (int l = 1; l < nl - 1; l++) {
+//         double h12 = (h[0,0,l-1] + h[0,0,l])/2;
+//       //  press -= G*h[0,0,l]/2;
+//         double shear = (h12>0? (u[l]-u[l-1])/h12: HUGE);
+//         // nueq[l]= nu_eq(shear,press);
+//         nueq[l]= nu_eq(shear);
+//         // press -= G*h[0,0,l] ;
+//     }
+//     nueq[0] = nueq[1];
+ 
+ double H = 0.;
+    foreach_layer()
+        H += h[];
+    for (int l = 0; l < nl; l++) {
+    if (l<1) {
+      // bottom layer
+      // vector um = 0.0;
+      double up1 = u[l];
+      double up2 = u[l+1];
+      double shear = (H>0? (up1+(up2-up1)*(h[0,0,l]/(h[0,0,l]+h[0,0,l+1])))/(h[0,0,l]) : HUGE);
+      nueq[l] = nu_eq(shear);
     }
-    nueq[0] = nueq[1];
+    else if (l<(nl-1)) {
+      // middle layers
+      double um = u[l-1];
+      double up = u[l+1];
+      double shear = (H>0? (up-um)/(h[0,0,l]+0.5*h[0,0,l+1]+0.5*h[0,0,l-1]) : HUGE);
+      nueq[l] = nu_eq(shear);
+    }
+    else {
+      // top layer
+      double um = u[l-1];
+      double up = u[l];
+      // double shear = (h>0? (up.x[]-um.x[])/(h*(0.5*layer[l-1]+0.5*layer[l])) : HUGE);
+      double shear = (H>0? (up-(um+(up-um)*(h[0,0,l-1])/(h[0,0,l]+h[0,0,l-1])))/(h[0,0,l]*0.50) : HUGE);
+      nueq[l] = nu_eq(shear);
+    }
+  }
     
     
     /**
