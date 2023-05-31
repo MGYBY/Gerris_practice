@@ -54,12 +54,15 @@ void vertical_viscosity (Point point, scalar h, scalar s, double dt)
     double nueq[nl];
     double a[nl], b[nl], c[nl], rhs[nl];
     double u[nl] ;
+    double H = 0.;
     
     /**
      The *rhs* of the tridiagonal system is $h_lu_l$. */
     
-    foreach_layer()
-    rhs[_layer] = s[]*h[];
+    foreach_layer() {
+     rhs[_layer] = s[]*h[];
+     H += h[];
+    }
     
     /**
      we get the value of velocity    */
@@ -83,10 +86,8 @@ void vertical_viscosity (Point point, scalar h, scalar s, double dt)
 //         // press -= G*h[0,0,l] ;
 //     }
 //     nueq[0] = nueq[1];
- 
- double H = 0.;
-    foreach_layer()
-        H += h[];
+
+        
     for (int l = 0; l < nl; l++) {
     if (l<1) {
       // bottom layer
