@@ -178,6 +178,7 @@ Note the regularization introduced to avoid division by zero*
 
 */
 //  double  press = G*h;//eta[]-zb[];
+	  
  for (l = 0; l < nl; l++) {
   if (l>0) {
     vector um = ul[l-1] ;
@@ -193,6 +194,7 @@ Note the regularization introduced to avoid division by zero*
     vector up2 = ul[l+1];
     double shear = (h>0? (up1.x[]+(up2.x[]-up1.x[])*(layer[l]/(layer[l]+layer[l+1])) - 0.0)/(h*layer[l]) : HUGE);
     nueq[l] = nu_eq(shear);
+	  // M1EMN's original scheme
     //    nueq[0] = nueq[1];
   }
    }
