@@ -6,6 +6,7 @@ The front-runner simulation.
 - [ ] Forward difference & central difference (seems better). Difference considering BCs.
 - [x] Mesh adaptation.
 - [x] Text field output, gnuplot images output, movie generation.
+- [ ] Plots for dimensionless variables, better fonts.
 - [ ] Surface tension (not important).
 - [ ] Horizontal viscosity (not important).
 - [ ] Other post-processing tools ...
