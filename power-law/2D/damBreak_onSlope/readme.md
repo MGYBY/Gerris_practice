@@ -1,4 +1,5 @@
 1D dam-break on slope, power-law fluids.
+
 Features:
 - Central-upwind scheme based shock-capturing scheme. Dimensional form for now.
 - Backward linearized Euler scheme for the source term.
