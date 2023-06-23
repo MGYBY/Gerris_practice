@@ -3,22 +3,26 @@
 #include "saint-venant-power-law.h"
 #include "utils.h"
 
-#define FR (1.756)
+// #define FR (1.756)
 #define n_coeff 0.30
 #define mun 150.0
 #define rho 2130.0
 #define grav 9.81
-#define so 0.00
+#define so 0.10
 #define ALPHA (1/pow(FR,2.0))
 
-#define aspectRatio 10.00
+#define aspectRatio 1.00
 #define initDepth 1.00
 // #define normalDepth 0.38093709
 // #define normalVel 3.3915176
 
 #define velThreshold 5.e-5
 
-#define simTime 1500.0
+// double alpha_coeff = 40.0;
+// double lx = 2.878;
+// #define disMag 0.20
+// double betaCoeff = 0.0;
+#define simTime 3500.0
 // double distPeriod = 1.0;
 // #define wavelength (3.0/pow(FR,2.0))
 // #define distPeriod (2.0/(FR*FR))
@@ -27,22 +31,26 @@
 #define OUTPUTTIME3 50.00
 #define OUTPUTPERIOD 20.0
 #define OUTPUTPERIOD2 200.0
-#define OUTPUTPLOT 10.00
-#define DOMAINLENGTH (initDepth*100.0)
+#define OUTPUTPLOT1 1.00
+#define PLOTPERIOD 25.0
+#define OUTPUTPLOT2 25.00
+#define DOMAINLENGTH (initDepth*110.0)
+
+#define XFROPERIOD 4.0
 
 #define initialStageTime 3.0
 #define restrictDt 1.0e-4
 
-#define inletRefLen (aspectRatio*2.0)
+#define inletRefLen (aspectRatio*2.50)
 
 // #define INITDEPTHFUNC(amp, len, xCoord) (1.0*(1.0+amp*sin(2.0*M_PI*(xCoord-len/2.0)/len)))
 // #define INLETDEPTHBC(amp, time, period) (1.0*(1.0+amp*sin(2.0*M_PI*(time)/period)))
 
-#define MAXLEVEL 15
+#define MAXLEVEL 14
 #define MINLEVEL 2
-#define INITLEVEL 15
+#define INITLEVEL 14
 
-// #define WARMUP (0.00)
+#define WARMUP (0.00)
 
 // h[left] = dirichlet( (t-WARMUP)<=(distPeriod/2.0) && (t-WARMUP)>=0 ? INLETDEPTHBC(disMag, (t-WARMUP), distPeriod) : 1.0 );
 // u.n[left] = dirichlet( (t-WARMUP)<=(distPeriod/2.0) && (t-WARMUP)>=0 ? pow(INLETDEPTHBC(disMag, (t-WARMUP), distPeriod), 0.5) : 1.0 );
@@ -71,10 +79,8 @@ int main()
 }
 
 scalar re[], fr[], frGrad[];
-// scalar inletRef[];
-scalar depthGrad[], inletRef[];
-// scalar frontXPos[];
 scalar te[], pe[], ke[];
+scalar depthGrad[];
 
 event init(i = 0)
 {
@@ -90,10 +96,9 @@ event init(i = 0)
                // u.x[] = 1.0;
                u.x[] = 0.0;
 
-               inletRef[] = x<=inletRefLen ? 1.0 : 0.0;
                depthGrad[] = fabs(h[-1]-h[1])/Delta;
 
-//                frontXPos[] = h[]>=dry ? x : 0.0;
+               fr[] = h[]>dry ? u.x[]/(pow(G*h[], 0.50)) : 0.0;
      }
 
 }
@@ -153,14 +158,13 @@ event friction(i++)
           // u.x[] = (u.x[] + G * So * dt) / (1. + (cf / (2.)) * dt * u.x[] / (h[]));
 
           re[] = rho*pow(u.x[], (2.0-n_coeff))*pow(h[], n_coeff)/mun;
-
-          fr[] = h[]>dry ? u.x[]/pow((G*h[]),0.50) : 0.0;
+          fr[] = h[]>dry ? u.x[]/(pow(G*h[], 0.50)) : 0.0;
      }
      boundary((scalar *){u.x}); // note that the input should be a list (at least for 1d)
 }
 
 // record max depth
-event hmaxUmax (i+=20)
+event hmaxUmax (i+=50)
 {
      double maxDepth = 0.0;
      double maxVel = 0.0;
@@ -195,8 +199,7 @@ event hmaxUmax (i+=20)
      fclose(fp4);
 }
 
-event hFront (i+=25)
-// event hFront (i+=2)
+event hFront1 (t=0; i+=4; t<XFROPERIOD)
 {
      double aveDepth = 0.0;
      double aveVel = 0.0;
@@ -204,7 +207,6 @@ event hFront (i+=25)
      FILE *fp3 = fopen("frontPos", "a+");
      foreach ()
      {
-//           frontXPos[] = h[]>=dry ? x : 0.0;
           xf = h[] > dry ?  max(xf,x) :  xf ;
           aveDepth += (h[]>=dry ? Delta*h[] : 0.0);
           aveVel += (h[]>=dry ? Delta*u.x[] : 0.0);
@@ -215,14 +217,32 @@ event hFront (i+=25)
      fclose(fp3);
 }
 
-event energyContent(i+=25)
+event hFront2 (t=XFROPERIOD; i+=80)
+{
+     double aveDepth = 0.0;
+     double aveVel = 0.0;
+     double xf = 0.0;
+     FILE *fp3 = fopen("frontPos", "a+");
+     foreach ()
+     {
+          xf = h[] > dry ?  max(xf,x) :  xf ;
+          aveDepth += (h[]>=dry ? Delta*h[] : 0.0);
+          aveVel += (h[]>=dry ? Delta*u.x[] : 0.0);
+     }
+//      stats s2 = statsf (frontXPos);
+//      xf = s2.max;
+     fprintf(fp3, "%.10g %.10g %.10g %.10g \n", t, xf, (aveDepth/xf), (aveVel/xf));
+     fclose(fp3);
+}
+
+event energyContent(i+=50)
 {
      // Vallis textbook P65.
      FILE *fp2 = fopen("energyContent", "a+");
      foreach ()
      {
-          te[] = 0.50*rho*h[]*u.x[]*u.x[] + 0.50*rho*G*h[];
-          ke[] = 0.50*rho*h[]*u.x[]*u.x[];
+          te[] = 0.50*rho*h[]*pow(u.x[], 2.0) + 0.50*rho*G*h[];
+          ke[] = 0.50*rho*h[]*pow(u.x[], 2.0);
           pe[] = 0.50*rho*G*h[];
      }
      stats s1 = statsf (te);
@@ -230,6 +250,34 @@ event energyContent(i+=25)
      stats s3 = statsf (pe);
      fprintf(fp2, "%g %g %g %g\n", t, s1.sum, s2.sum, s3.sum);
      fclose(fp2);
+}
+
+event slopeCalc(i+=50)
+{
+     double slopeVal = 0.0;
+     double endXCoord = 0.0;
+     double beginDepth = 0.0;
+     double endDepth = 0.0;
+     int count = 0;
+     FILE *fp1 = fopen("slope", "a+");
+     foreach()
+     {
+          if(count<1)
+          {
+               beginDepth = h[];
+               endDepth = h[];
+          }
+          else if (h[1]-h[-1]<0 && h[2]-h[]<0)
+          {
+               endDepth = h[];
+               endXCoord = x;
+               break;
+          }
+          count += 1;
+     }
+     slopeVal = (endDepth-beginDepth)/(endXCoord-0.0);
+     fprintf(fp2, "%g %g \n", t, slopeVal);
+     fclose(fp1);
 }
 
 /**
@@ -252,23 +300,16 @@ void plot_profile(double t, FILE *fp)
      fflush(fp);
 }
 
-event gnuplot(t = 0; t <= simTime; t += OUTPUTPLOT)
+event gnuplotOutput1(t = 0; t <= PLOTPERIOD; t += OUTPUTPLOT1)
 {
      static FILE *fp = popen("gnuplot 2> /dev/null", "w");
      plot_profile(t, fp);
-     // fprintf(fp,
-     //         "set term pngcairo enhanced size 800,600 font \",10\"\n"
-     //         "set output 't%.0f.png'\n"
-     //         "set title 't = %.2f'\n"
-     //         "set xrange [0:40]\n"
-     //         "plot u 1:2 w l t\n",
-     //         t, t);
-     // fprintf(fp, "\n");
-     // foreach ()
-     //      fprintf(fp, "%g %g\n", x, h[]);
-     // fprintf(fp, "e\n\n");
-     // fflush(fp);
-     // fprintf(stderr, "%.3f %.3f\n", t, statsf(h).max); // uncomment if needed
+}
+
+event gnuplotOutput2(t = PLOTPERIOD; t += OUTPUTPLOT2)
+{
+     static FILE *fp = popen("gnuplot 2> /dev/null", "w");
+     plot_profile(t, fp);
 }
 
 event output1(t = 0.0; t <= OUTPUTPERIOD; t += OUTPUTTIME1)
@@ -278,6 +319,7 @@ event output1(t = 0.0; t <= OUTPUTPERIOD; t += OUTPUTTIME1)
      FILE *fp = fopen(name, "w");
      foreach ()
           fprintf(fp, "%g %g %g %g %g \n", x, h[], u.x[], re[], fr[]);
+//      fprintf(fp, "\n");
      fclose(fp);
 }
 
@@ -288,6 +330,7 @@ event output2(t = OUTPUTPERIOD; t <= OUTPUTPERIOD2; t += OUTPUTTIME2)
      FILE *fp = fopen(name, "w");
      foreach ()
           fprintf(fp, "%g %g %g %g %g \n", x, h[], u.x[], re[], fr[]);
+//      fprintf(fp, "\n");
      fclose(fp);
 }
 
@@ -298,6 +341,7 @@ event output3(t = OUTPUTPERIOD2; t <= simTime; t += OUTPUTTIME3)
      FILE *fp = fopen(name, "w");
      foreach ()
           fprintf(fp, "%g %g %g %g %g \n", x, h[], u.x[], re[], fr[]);
+//      fprintf(fp, "\n");
      fclose(fp);
 }
 
@@ -309,7 +353,7 @@ event output3(t = OUTPUTPERIOD2; t <= simTime; t += OUTPUTTIME3)
 // }
 // AMR features
 event adapt1 (i++) {
-     adapt_wavelet({h, depthGrad, frGrad}, (double[]){initDepth/325.0, 1.8e-5, 5.e-4}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
+     adapt_wavelet({h, depthGrad, frGrad}, (double[]){initDepth/325.0, 1.8e-5, 4.e-4}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 //      astats s = adapt_wavelet({h, depthGrad}, (double[]){1.0/300.0, 0.00016}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
   // astats s = adapt_wavelet({ depthGrad}, (double[]){ 0.00010}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 //   fprintf(stderr, "# refined %d cells, coarsened %d cells\n", s.nf, s.nc);
