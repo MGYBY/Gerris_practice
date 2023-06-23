@@ -266,8 +266,12 @@ event slopeCalc(i+=50)
           {
                beginDepth = h[];
                endDepth = h[];
+//                if (h[1]-h[]<0)
+//                {
+//                     break;
+//                }
           }
-          else if (h[1]-h[-1]<0 && h[2]-h[]<0)
+          else if (h[]-h[-1]>=0 && h[1]-h[]<0 && h[2]-h[1]<0)
           {
                endDepth = h[];
                endXCoord = x;
@@ -275,7 +279,7 @@ event slopeCalc(i+=50)
           }
           count += 1;
      }
-     slopeVal = (endDepth-beginDepth)/(endXCoord-0.0);
+     slopeVal = (endXCoord-0.0)>1.e-10 && count>=1 ? (endDepth-beginDepth)/(endXCoord-0.0) : 0.0;
      fprintf(fp1, "%g %g \n", t, slopeVal);
      fclose(fp1);
 }
