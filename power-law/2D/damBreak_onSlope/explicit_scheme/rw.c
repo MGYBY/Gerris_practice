@@ -276,7 +276,7 @@ event slopeCalc(i+=50)
           count += 1;
      }
      slopeVal = (endDepth-beginDepth)/(endXCoord-0.0);
-     fprintf(fp2, "%g %g \n", t, slopeVal);
+     fprintf(fp1, "%g %g \n", t, slopeVal);
      fclose(fp1);
 }
 
