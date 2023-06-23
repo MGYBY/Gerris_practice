@@ -207,17 +207,19 @@ event hFront1 (t=0; i+=4; t<XFROPERIOD)
      FILE *fp3 = fopen("frontPos", "a+");
      foreach ()
      {
+//           frontXPos[] = h[]>=dry ? x : 0.0;
           xf = h[] > dry ?  max(xf,x) :  xf ;
           aveDepth += (h[]>=dry ? Delta*h[] : 0.0);
-          aveVel += (h[]>=dry ? Delta*u.x[] : 0.0);
+          aveVel += (h[]>=dry ? Delta*q.x[]/h[] : 0.0);
      }
+     stats s1 = statsf (h);
 //      stats s2 = statsf (frontXPos);
 //      xf = s2.max;
-     fprintf(fp3, "%.10g %.10g %.10g %.10g \n", t, xf, (aveDepth/xf), (aveVel/xf));
+     fprintf(fp3, "%.10g %.10g %.10g %.10g %.10g \n", t, xf, (aveDepth/xf), (aveVel/xf), (s1.max/xf));
      fclose(fp3);
 }
 
-event hFront2 (t=XFROPERIOD; i+=80)
+event hFront2 (t=XFROPERIOD; t<=simTime; i+=80)
 {
      double aveDepth = 0.0;
      double aveVel = 0.0;
@@ -225,13 +227,15 @@ event hFront2 (t=XFROPERIOD; i+=80)
      FILE *fp3 = fopen("frontPos", "a+");
      foreach ()
      {
+//           frontXPos[] = h[]>=dry ? x : 0.0;
           xf = h[] > dry ?  max(xf,x) :  xf ;
           aveDepth += (h[]>=dry ? Delta*h[] : 0.0);
-          aveVel += (h[]>=dry ? Delta*u.x[] : 0.0);
+          aveVel += (h[]>=dry ? Delta*q.x[]/h[] : 0.0);
      }
+     stats s1 = statsf (h);
 //      stats s2 = statsf (frontXPos);
 //      xf = s2.max;
-     fprintf(fp3, "%.10g %.10g %.10g %.10g \n", t, xf, (aveDepth/xf), (aveVel/xf));
+     fprintf(fp3, "%.10g %.10g %.10g %.10g %.10g \n", t, xf, (aveDepth/xf), (aveVel/xf), (s1.max/xf));
      fclose(fp3);
 }
 
