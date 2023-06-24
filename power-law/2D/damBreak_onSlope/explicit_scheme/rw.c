@@ -204,13 +204,13 @@ event hFront1 (t=0; i+=4; t<XFROPERIOD)
      double aveDepth = 0.0;
      double aveVel = 0.0;
      double xf = 0.0;
-     FILE *fp3 = fopen("frontPos", "a+");
+     FILE *fp3 = fopen("frontPosMod", "a+");
      foreach ()
      {
 //           frontXPos[] = h[]>=dry ? x : 0.0;
           xf = h[] > dry ?  max(xf,x) :  xf ;
           aveDepth += (h[]>=dry ? Delta*h[] : 0.0);
-          aveVel += (h[]>=dry ? Delta*q.x[]/h[] : 0.0);
+          aveVel += (h[]>=dry ? Delta*u.x[] : 0.0);
      }
      stats s1 = statsf (h);
 //      stats s2 = statsf (frontXPos);
@@ -224,13 +224,13 @@ event hFront2 (t=XFROPERIOD; t<=simTime; i+=80)
      double aveDepth = 0.0;
      double aveVel = 0.0;
      double xf = 0.0;
-     FILE *fp3 = fopen("frontPos", "a+");
+     FILE *fp3 = fopen("frontPosMod", "a+");
      foreach ()
      {
 //           frontXPos[] = h[]>=dry ? x : 0.0;
           xf = h[] > dry ?  max(xf,x) :  xf ;
           aveDepth += (h[]>=dry ? Delta*h[] : 0.0);
-          aveVel += (h[]>=dry ? Delta*q.x[]/h[] : 0.0);
+          aveVel += (h[]>=dry ? Delta*u.x[] : 0.0);
      }
      stats s1 = statsf (h);
 //      stats s2 = statsf (frontXPos);
