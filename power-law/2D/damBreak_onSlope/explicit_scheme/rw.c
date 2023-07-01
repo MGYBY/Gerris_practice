@@ -117,13 +117,6 @@ event calcDepthGrad(i++)
      }
 }
 
-static double powerLawFriction(double u, double h, double n)
-{
-     double rhs;
-     rhs = G*so - mun/rho*pow(((1.+2.*n)/n*u/h), n)/h;
-     return rhs;
-}
-
 // bottom friction
 event friction(i++)
 {
@@ -162,6 +155,37 @@ event friction(i++)
      }
      boundary((scalar *){u.x}); // note that the input should be a list (at least for 1d)
 }
+
+// rk3tvd
+// static double powerLawFriction(double u, double h, double n, double depthThreshold, double uThreshold)
+// {
+//      double rhs;
+//      rhs = h>depthThreshold && u>uThreshold ? G*so - mun/rho*pow(((1.+2.*n)/n*u/h), n)/h : 0.0;
+//      return rhs;
+// }
+
+// // bottom friction
+// event friction(i++)
+// {
+//      double uMed=0.0;
+//      foreach ()
+//      {
+//           // rk3tvd
+//           if (h[] > dry && u.x[]>velThreshold ) {
+//                uMed = u.x[] + dt * powerLawFriction(u.x[], h[], n_coeff, dry, velThreshold);
+//                uMed = (3.0/4.0)*u.x[] + (1.0/4.0)*uMed + (1.0/4.0)*dt*powerLawFriction(uMed, h[], n_coeff, dry, velThreshold);
+//                u.x[] = (1.0/3.0)*u.x[]+(2.0/3.0)*uMed+(2.0/3.0)*dt*powerLawFriction(uMed, h[], n_coeff, dry, velThreshold);
+//           }
+//           else {
+//                u.x[] = 0.0;
+//           }
+
+//           re[] = rho*pow(u.x[], (2.0-n_coeff))*pow(h[], n_coeff)/mun;
+
+//           fr[] = h[]>dry ? u.x[]/pow((G*h[]),0.50) : 0.0;
+//      }
+//      boundary((scalar *){u.x}); // note that the input should be a list (at least for 1d)
+// }
 
 // record max depth
 event hmaxUmax (i+=50)
