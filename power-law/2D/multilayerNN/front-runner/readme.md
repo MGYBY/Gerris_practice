@@ -10,3 +10,4 @@ The front-runner simulation.
 - [ ] Surface tension (not important).
 - [ ] Horizontal viscosity (not important).
 - [x] Other post-processing tools: Gnuplot, OriginLab, ...
+- [ ] FIXME: check the velocity field initialization. (+= may be wrong)
