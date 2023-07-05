@@ -482,6 +482,89 @@ static void riemann_kurganov_sharp_powerLaw (const GfsRiver * r,
     f[H] = f[U] = f[V] = 0.;
 }
 
+static void riemann_kurganov_rh_powerLaw (const GfsRiver * r,
+			  const gdouble * uL, const gdouble * uR,
+			  gdouble * f, FttCellFace * face)
+{
+  gdouble cR = sqrt(r->g*uR[H]+SQUARE(uR[U])*(r->betaPowerLaw*r->betaPowerLaw-r->betaPowerLaw));
+  gdouble cL = sqrt(r->g*uL[H]+SQUARE(uL[U])*(r->betaPowerLaw*r->betaPowerLaw-r->betaPowerLaw));
+  gdouble aR = max(r->betaPowerLaw*uR[U] + cR, r->betaPowerLaw*uL[U] + cL);
+  aR = max(aR, 0.);
+  gdouble aL = min(r->betaPowerLaw*uR[U] - cR, r->betaPowerLaw*uL[U] - cL);
+  aL = min(aL, 0.);
+  gdouble qL = uL[H]*uL[U];
+  gdouble qR = uR[H]*uR[U];
+  gdouble tinyParam = 1.0e-10;
+  gdouble deltaUEps1 = (uR[H]-uL[H])>0 ? max((uR[H]-uL[H]), tinyParam) : min((uR[H]-uL[H]), -1.0*tinyParam);
+  gdouble deltaUEps2 = (qR-qL)>0 ? max((qR-qL), tinyParam) : min((qR-qL), -1.0*tinyParam);
+  gdouble shat1 = (2.0*(qR-qL))/((uR[H]-uL[H])+deltaUEps1);
+  gdouble shat2 = (2.0*((r->betaPowerLaw*qR*uR[U] + r->g*pow(uR[H] ,2.0)/2.)-(r->betaPowerLaw*qL*uL[U] + r->g*pow(uL[H] ,2.0)/2.)))/((qR-qL)+deltaUEps2);
+  gdouble smax = max(shat1, shat2), smin = min(shat1, shat2);
+  if (smax>tinyParam)
+  {
+    aR = min(aR, smax);
+    aL = max(aL, -1.0*smax);
+  }
+  else if (smin<(-1.0*tinyParam))
+  {
+    aR = min(aR, -1.0*smin);
+    aL = max(aL, smin);
+  }
+  gdouble a = max(aR, -aL);
+  gdouble epsilon = 1e-30;
+  if (a > epsilon) {
+    gdouble wint = (aR*uR[H]-aL*uL[H]-(qR-qL))/(aR-aL);
+    gdouble qCorr = mmo((uR[H]-wint)/(aR-aL), (wint-uL[H])/(aR-aL));
+    f[H] = (aR*qL - aL*qR)/(aR - aL) + (aR*aL*((uR[H] - uL[H])/(aR - aL)-qCorr)); // (4.5) of [1]
+    wint = (aR*qR-aL*qL-((r->betaPowerLaw*qR*uR[U] + r->g*SQUARE(uR[H])/2.)-(r->betaPowerLaw*qL*uL[U] + r->g*SQUARE(uL[H])/2.)))/(aR-aL);
+    qCorr = mmo((qR-wint)/(aR-aL), (wint-qL)/(aR-aL));
+    f[U] = (aR*(r->betaPowerLaw*qL*uL[U] + r->g*SQUARE(uL[H])/2.) - aL*(r->betaPowerLaw*qR*uR[U] + r->g*SQUARE(uR[H])/2.))/(aR - aL) + (aR*aL*((qR - qL)/(aR - aL)-qCorr));
+    // fv = (fh > 0. ? u.y[-1] + dx*gu.y.x[-1] : u.y[] - dx*gu.y.x[])*fh;
+    // TODO: V-component flux is now a simple upwind scheme. Follow Kurganov's genuinely 2D method.
+    f[V] = (f[H]>0 ? uL[V] : uR[V])*f[H]*(r->betaPowerLaw);
+  }
+  else
+    f[H] = f[U] = f[V] = 0.;
+}
+
+static void riemann_hlle_powerLaw (const GfsRiver * r,
+			  const gdouble * uL, const gdouble * uR,
+			  gdouble * f, FttCellFace * face)
+{
+  // Roe average
+  gdouble uhat = (sqrt(uL[H])*uL[U]+sqrt(uR[H])*uR[U])/(sqrt(uL[H])+sqrt(uR[H]));
+  gdouble cm = sqrt (r->g*uL[H]+SQUARE(uL[U])*(r->betaPowerLaw*r->betaPowerLaw-r->betaPowerLaw)), cp = sqrt (r->g*uR[H]+SQUARE(uR[U])*(r->betaPowerLaw*r->betaPowerLaw-r->betaPowerLaw));
+  gdouble chat = sqrt(r->g*(uR[H]+uL[H])/2.0+SQUARE(uhat)*(r->betaPowerLaw*r->betaPowerLaw-r->betaPowerLaw));
+  gdouble sL = min (r->betaPowerLaw*uL[U] - cm, r->betaPowerLaw*uhat - chat); sL = min(sL, r->betaPowerLaw*uR[U] - cp);
+  gdouble sR = max (r->betaPowerLaw*uR[U] + cp, r->betaPowerLaw*uhat + chat); sR = max(sR, r->betaPowerLaw*uL[U] + cm);
+
+  gdouble a = max(fabs(sL), fabs(sR));
+  gdouble epsilon = 1e-30;
+  if (a > epsilon) {
+    if (0. <= sL) {
+    f[H] = uL[U]*uL[H];
+    f[U] = uL[H]*(r->betaPowerLaw*uL[U]*uL[U]+ r->g*uL[H]/2.);
+  }
+  else if (0. >= sR) {
+    f[H] = uR[U]*uR[H];
+    f[U] = uR[H]*(r->betaPowerLaw*uR[U]*uR[U]+ r->g*uR[H]/2.);
+  }
+  else {
+    gdouble fhm = uL[U]*uL[H];
+    gdouble fum = uL[H]*(r->betaPowerLaw*uL[U]*uL[U]+ r->g*uL[H]/2.);
+    gdouble fhp = uR[U]*uR[H];
+    gdouble fup = uR[H]*(r->betaPowerLaw*uR[U]*uR[U]+ r->g*uR[H]/2.);
+    f[H] = (sR*fhm - sL*fhp + sL*sR*(uR[H] - uL[H]))/(sR - sL);
+    f[U] = (sR*fum - sL*fup + sL*sR*(uR[H]*uR[U] - uL[H]*uL[U]))/(sR - sL);
+  }
+
+    // TODO: V-component flux is now a simple upwind scheme. Follow Kurganov's genuinely 2D method.
+    f[V] = (f[H]>0 ? uL[V] : uR[V])*f[H]*(r->betaPowerLaw);
+  }
+  else
+    f[H] = f[U] = f[V] = 0.;
+}
+
 // CHANGE due to slope coordinate
 // TODO: not entirely right for the eigenvalues
 static void riemann_kurganov (const GfsRiver * r,
@@ -1514,6 +1597,18 @@ static void river_read (GtsObject ** o, GtsFile * fp)
     else
 	  river->scheme = riemann_kurganov_sharp_powerLaw;
       }
+      else if (!strcmp (scheme, "kurganovPowerLawRH")) {
+        if (river->nlayers > 1)
+	  gts_file_error (fp, "Kurganov solver can only be used for a single layer");
+    else
+	  river->scheme = riemann_kurganov_rh_powerLaw;
+      }
+      else if (!strcmp (scheme, "kurganovPowerLawHLLE")) {
+        if (river->nlayers > 1)
+	  gts_file_error (fp, "Kurganov solver can only be used for a single layer");
+    else
+	  river->scheme = riemann_hlle_powerLaw;
+      }
       else if (!strcmp (scheme, "kurganovSharp")) {
         if (river->nlayers > 1)
 	  gts_file_error (fp, "Kurganov solver can only be used for a single layer");
@@ -1544,7 +1639,7 @@ static void river_write (GtsObject * o, FILE * fp)
 	   "  scheme = %s\n",
 	   river->time_order,
 	   river->dry*GFS_SIMULATION (river)->physical_params.L,
-	   river->scheme == riemann_hllc ? "hllc" : (river->scheme == riemann_kurganov_powerLaw ? "kurganovPowerLaw" :(river->scheme == riemann_kurganov ? "kurganov" : (river->scheme == riemann_kinetic ? "kinetic" : (river->scheme == riemann_kurganov_sharp_powerLaw ? "kurganovPowerLawSharp" : "kurganovSharp")))));
+	   river->scheme == riemann_hllc ? "hllc" : (river->scheme == riemann_kurganov_powerLaw ? "kurganovPowerLaw" :(river->scheme == riemann_kurganov ? "kurganov" : (river->scheme == riemann_kinetic ? "kinetic" : (river->scheme == riemann_kurganov_sharp_powerLaw ? "kurganovPowerLawSharp" : (river->scheme == riemann_kurganov_rh_powerLaw ? "kurganovPowerLawRH" : (river->scheme == riemann_hlle_powerLaw ? "kurganovPowerLawHLLE" : "kurganovSharp")))))));
   if (river->nu) {
     fputs ("  nu =", fp);
     gfs_function_write (river->nu, fp);
