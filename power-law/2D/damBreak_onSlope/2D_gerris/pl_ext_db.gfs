@@ -1,0 +1,313 @@
+# Title: The square and circular cylinder impacted by the normal flow
+#
+# Description:
+#
+
+# below this depth the flow is considered "dry"
+Define DRY 1.0e-5
+Define sinTheta 0.10
+Define cosTheta (pow((1.0-pow(sinTheta, 2.0)), 0.50))
+Define tanTheta (sinTheta/cosTheta)
+Define GRAV 9.81
+Define GRAVITYCOEFF (GRAV*cosTheta)
+Define nPower 0.30
+Define betaVar (2.0*(1.0+2.0*nPower)/(2.0+3.0*nPower))
+Define muN 150.0
+Define rhoMud 2130.0
+
+Define INITIALDEPTH 4.00
+Define INITAR 5.00
+
+Define width (INITIALDEPTH*INITAR*1.0)
+# Define ASPECTRATIO (10.0/3.0)
+Define NUMBOXY 1
+Define NUMBOXX 6
+Define NUMBOX NUMBOXX
+Define NUMSEG 5
+Define LX (width*5.0*NUMBOX/1.0)
+Define LY (width*5.0)
+Define boxLength (LX/NUMBOXX)
+# Define XB ((pow(NORMALVELOCITY,2.0)/(GRAV*sinTheta))*59.615)
+Define XB (INITIALDEPTH*INITAR*12.0)
+Define REFINELENGTH (INITIALDEPTH*INITAR*2.25)
+Define REFINTIME (4.50*pow(INITDEPDEPTH/GRAVITYCOEFF, 0.50))
+
+Define EPSILONU 2.5e-5
+
+# mesh adaptivity parameters
+Define MAXLEVEL 9
+Define MINLEVEL 2
+
+Define WARMUP 0.00
+
+Define TOUTPUTFIELD 0.50
+Define TOUTPUTSLICE 0.50
+
+NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
+    x = 0.5 y = 0.5 
+} {
+
+    Time { end = 80.0 }
+
+    PhysicalParams { L = boxLength g = GRAVITYCOEFF betaCoeff = betaVar }
+
+    # Solid (cube((XB+width/2.0), boxLength/2.0 ,0.0 , width))
+    Solid (sphere((XB+width/2.0), (LY/2.0) ,0.0 , width/2.0))
+#     Solid (cube((XB+width/2.0), (LY/2.0), 0.0, width))
+    RefineSolid MAXLEVEL
+
+    Init {} {
+        # Initial normal flow
+	    P = x<=INITIALDEPTH*INITAR ? INITIALDEPTH : 0.0
+	    U = 0.0
+        OBSREF = pow((x-(XB+width/2.0)),2.0)+pow((y-(LY/2.0)),2.0)<pow(width/2.0*1.425,2.0) ? 1.0 : 0.0
+        BEGININIT = x<REFINELENGTH ? 1.0 : 0.0
+        RE = rhoMud*(pow(Velocity, (2.0-nPower)))*(pow(P, nPower))/muN
+        FROUDE = P>DRY ? Velocity/pow(P, 0.50) : 0.0
+        Pmax = 0.0
+    }
+
+    Init { istep = 1 } {
+	# # TVD RK3
+    # # follow the integration procedure suggested by E.F.Toro
+    # # first stage
+    # UMed1 = ((P > DRY && fabs(U/P) > EPSILONU) ? U + dt * powerLawX(P, U, V) : 0.)
+    # VMed1 = ((P > DRY && fabs(V/P) > EPSILONU) ? V + dt * powerLawY(P, U, V) : 0.)
+# 
+	# # second stage
+	# UMed2 = ((P > DRY && fabs(U/P) > EPSILONU) ? (3.0/4.0)*U + (1.0/4.0)*UMed1 + (1.0/4.0)*dt*powerLawX(P, UMed1, VMed1) : 0.)
+	# VMed2 = ((P > DRY && fabs(V/P) > EPSILONU) ? (3.0/4.0)*V + (1.0/4.0)*VMed1 + (1.0/4.0)*dt*powerLawY(P, UMed1, VMed1) : 0.)
+# 
+	# # third stage
+	# U = ((P > DRY && fabs(U/P) > EPSILONU) ? (1.0/3.0)*U+(2.0/3.0)*UMed2+(2.0/3.0)*dt*powerLawX(P, UMed2, VMed2) : 0.)
+    # V = ((P > DRY && fabs(V/P) > EPSILONU) ? (1.0/3.0)*V+(2.0/3.0)*VMed2+(2.0/3.0)*dt*powerLawY(P, UMed2, VMed2) : 0.)
+    # P = (P > DRY ? P : 0.)
+    
+    # implicit method
+    U = (P > DRY && fabs(Velocity) > EPSILONU) ? (U+dt*tanTheta*GRAVITYCOEFF*P)/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
+    V = (P > DRY && fabs(Velocity) > EPSILONU) ? V/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
+    P = (P > DRY ? P : 0.)
+
+    # RK2 TVD
+    # # first stage
+#     UMed1 = ((P > DRY && fabs(Velocity) > EPSILONU) ? U + dt * powerLawX(P, U, V) : 0.)
+#     VMed1 = ((P > DRY && fabs(Velocity) > EPSILONU) ? V + dt * powerLawY(P, U, V) : 0.)
+#     ## second stage
+#     U = ((P > DRY && fabs(Velocity) > EPSILONU) ? (1.0/2.0)*U+(1.0/2.0)*UMed1+(1.0/2.0)*dt*powerLawX(P, UMed1, VMed1) : 0.)
+#     V = ((P > DRY && fabs(Velocity) > EPSILONU) ? (1.0/2.0)*V+(1.0/2.0)*VMed1+(1.0/2.0)*dt*powerLawY(P, UMed1, VMed1) : 0.)
+
+    VORT = (P > DRY ? (dx("V") - dy("U")) : 0.0)
+#     RE = rhoMud*(pow(Velocity, (2.0-nPower)))*(pow(P, nPower))/muN
+
+	# check erroneous velocity
+#     U = (Velocity < (20.0*NORMALVELOCITY) || dt > 1e-4 || P>0.95*NORMALDEPTH ) ? U :0.0
+#     V = (Velocity < (20.0*NORMALVELOCITY) || dt > 1e-4 || P>0.95*NORMALDEPTH ) ? V :0.0
+    U = ( Velocity < (20.0*pow(GRAVITYCOEFF*INITIALDEPTH, 0.50)) ) ? U : 20.0*pow(GRAVITYCOEFF*INITIALDEPTH, 0.50)*U/Velocity
+    V = ( Velocity < (20.0*pow(GRAVITYCOEFF*INITIALDEPTH, 0.50)) ) ? V : 20.0*pow(GRAVITYCOEFF*INITIALDEPTH, 0.50)*V/Velocity
+
+    FROUDE = P>DRY ? Velocity/pow(P, 0.50) : 0.0
+
+    Pmax = (P > DRY && H > Pmax ? H : Pmax)
+    }
+
+    Init { step = TOUTPUTFIELD } {
+    		# Re number calc.
+		RE = rhoMud*(pow(Velocity, (2.0-nPower)))*(pow(P, nPower))/muN
+    }
+
+    AdvectionParams {
+#         gradient = gfs_center_van_leer_gradient
+# 		gradient = gfs_center_vlSharp04_gradient
+		gradient = gfs_center_minmod_gradient
+        cfl = 0.360
+        }
+
+    # Refine MAXLEVEL
+    Refine ((x<1.0 || (pow((x-(XB+width/2.0)),2.0)+pow((y-(boxLength/2.0)),2.0)<pow(width/2.0*1.25,2.0))) ? MAXLEVEL : MINLEVEL)
+    AdaptGradient { istep = 1} {
+        cmax = INITIALDEPTH/100.0
+        cfactor = 2.75
+        # cfactor = 4
+        maxlevel = MAXLEVEL
+        minlevel = MINLEVEL
+    } P
+
+    AdaptGradient { istep = 1} {
+        cmax = 3.0e1
+        cfactor = 2.5
+        # cfactor = 4
+        maxlevel = MAXLEVEL
+        minlevel = MINLEVEL
+    } FROUDE
+
+    AdaptError { istep = 1 } {
+		cmax = INITIALDEPTH/132.0
+    	maxlevel = MAXLEVEL
+        minlevel = MINLEVEL
+    } Pmax
+
+#     AdaptGradient { istep = 1} {
+#         cmax = 0.5e-5
+#         cfactor = 2
+#         # cfactor = 4
+# #         weight = 10
+#         maxlevel = x>(XB-width) ? MAXLEVEL : (MINLEVEL+1)
+#         minlevel = MINLEVEL
+#     } P
+
+#     AdaptError { istart = 1 istep = 1 } { cmax = (NORMALDEPTH/225.0) maxlevel = MAXLEVEL minlevel = MINLEVEL } P
+
+    # Use constant resolution around obstacle
+    AdaptFunction { istep = 1 } {
+	cmax = 0
+	maxlevel = MAXLEVEL
+    } OBSREF
+
+    AdaptFunction { start = 0.0 istep = 1 end = 2.25 } {
+	cmax = 0
+	maxlevel = MAXLEVEL
+    } BEGININIT
+
+    AdaptFunction { istep = 1 } {
+	cmax = 4.50e-3
+	cfactor= 2
+	maxlevel = MAXLEVEL
+	minlevel = MINLEVEL
+    } ( (x>(XB-1.20*width) ) ? fabs(VORT*dL/1.0) : 0.0)
+
+    #(P < DRY ? 0. : P + Zb)
+
+    OutputTime { istep = 10 } stderr
+    OutputTime { istep = 10 } ./time-stats.txt
+
+    OutputSimulation { step = TOUTPUTFIELD } snapshot-%g.gfs { variables = P,U,V,VORT,OBSREF,BEGININIT,RE,FROUDE,Pmax }
+    
+#     OutputSolidForce { istep = 1 } f
+    # time normal and CD calculation using awk
+    OutputSolidForce { istep = 1 } {
+        awk 'BEGIN{
+            slope = sinTheta;
+            gravity = GRAV;
+            w = width;
+			corr = betaVar;
+        }
+        {
+           if ($1 != "#")
+             print $1, $2;
+        }' >> f
+    }
+
+#     OutputLocation { step = 1.00 } slice-%g gaugeLoc
+    OutputLocation { istep = 1 } {
+    awk '{
+		if ($1 != "#")
+			print $1, $5;
+		}' > runup
+    } runupLoc
+
+    OutputLocation { step=TOUTPUTSLICE } slice-%g gaugeLoc
+#
+#     GModule gfsview
+#     OutputView { istep = 50 } {
+#     ppm2mpeg > depth.mpg
+#     } view.gfv
+
+    # OutputLocation { istep = 10 } Rmax 0.763 0.872 0.0
+
+} {
+# scheme = kurganovPowerLaw
+# scheme = kurganovPowerLawSharp
+scheme = kurganovPowerLawRH
+dry = DRY
+}
+
+# box #1
+GfsBox {
+    left = Boundary
+    top = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+    bottom = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+}
+# box #2
+GfsBox {
+    top = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+    bottom = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+}
+# box #3
+GfsBox {
+    top = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+    bottom = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+}
+# box #4
+GfsBox {
+    top = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+    bottom = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+}
+# box #5
+GfsBox {
+    top = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+    bottom = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+}
+# box #6
+GfsBox {
+    right = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+    top = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+    bottom = Boundary {
+        BcNeumann P 0.0
+        BcNeumann U 0.0
+        BcNeumann V 0.0
+    }
+}
+
+1 2 right
+2 3 right
+3 4 right
+4 5 right
+5 6 right
