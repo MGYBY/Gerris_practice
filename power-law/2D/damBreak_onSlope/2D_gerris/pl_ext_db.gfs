@@ -126,7 +126,7 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
         }
 
     AdaptGradient { istep = 1} {
-        cmax = 0.0125
+        cmax = 0.04
         cfactor = 2.75
         # cfactor = 4
         maxlevel = MAXLEVEL
@@ -134,7 +134,7 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     } P
 
     AdaptGradient { istep = 1} {
-        cmax = 0.0125
+        cmax = 0.04
         cfactor = 2.5
         # cfactor = 4
         maxlevel = MAXLEVEL
