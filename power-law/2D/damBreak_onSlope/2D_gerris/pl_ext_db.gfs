@@ -21,9 +21,9 @@ Define INITAR 5.00
 Define width (INITIALDEPTH*INITAR*1.0)
 # Define ASPECTRATIO (10.0/3.0)
 Define NUMBOXY 1
-Define NUMBOXX 6
+Define NUMBOXX 5
 Define NUMBOX NUMBOXX
-Define NUMSEG 5
+Define NUMSEG 4
 Define LX (width*5.0*NUMBOX/1.0)
 Define LY (width*5.0)
 Define boxLength (LX/NUMBOXX)
@@ -50,6 +50,9 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     Time { end = 80.0 }
 
     PhysicalParams { L = boxLength g = GRAVITYCOEFF betaCoeff = betaVar }
+
+    # Initial refinement
+    Refine ((x<REFINELENGTH || (pow((x-(XB+width/2.0)),2.0)+pow((y-(boxLength/2.0)),2.0)<pow(width/2.0*1.42,2.0))) ? MAXLEVEL : MINLEVEL)
 
     # Solid (cube((XB+width/2.0), boxLength/2.0 ,0.0 , width))
     Solid (sphere((XB+width/2.0), (LY/2.0) ,0.0 , width/2.0))
@@ -122,10 +125,8 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
         cfl = 0.360
         }
 
-    # Refine MAXLEVEL
-    Refine ((x<1.0 || (pow((x-(XB+width/2.0)),2.0)+pow((y-(boxLength/2.0)),2.0)<pow(width/2.0*1.25,2.0))) ? MAXLEVEL : MINLEVEL)
     AdaptGradient { istep = 1} {
-        cmax = INITIALDEPTH/100.0
+        cmax = 0.0125
         cfactor = 2.75
         # cfactor = 4
         maxlevel = MAXLEVEL
@@ -133,7 +134,7 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     } P
 
     AdaptGradient { istep = 1} {
-        cmax = 3.0e1
+        cmax = 0.0125
         cfactor = 2.5
         # cfactor = 4
         maxlevel = MAXLEVEL
@@ -141,7 +142,7 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     } FROUDE
 
     AdaptError { istep = 1 } {
-		cmax = INITIALDEPTH/132.0
+		cmax = INITIALDEPTH/160.0
     	maxlevel = MAXLEVEL
         minlevel = MINLEVEL
     } Pmax
@@ -173,7 +174,11 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
 	cfactor= 2
 	maxlevel = MAXLEVEL
 	minlevel = MINLEVEL
-    } ( (x>(XB-1.20*width) ) ? fabs(VORT*dL/1.0) : 0.0)
+    } ( (x>(XB-1.00*width) && (x<(XB+2.75*width)) ) ? fabs(VORT*dL/1.0) : 0.0)
+
+    EventList { start = 0.0 step = 5.0e-4 end = 0.225 } {
+
+    }
 
     #(P < DRY ? 0. : P + Zb)
 
@@ -276,19 +281,6 @@ GfsBox {
 }
 # box #5
 GfsBox {
-    top = Boundary {
-        BcNeumann P 0.0
-        BcNeumann U 0.0
-        BcNeumann V 0.0
-    }
-    bottom = Boundary {
-        BcNeumann P 0.0
-        BcNeumann U 0.0
-        BcNeumann V 0.0
-    }
-}
-# box #6
-GfsBox {
     right = Boundary {
         BcNeumann P 0.0
         BcNeumann U 0.0
@@ -310,4 +302,3 @@ GfsBox {
 2 3 right
 3 4 right
 4 5 right
-5 6 right
