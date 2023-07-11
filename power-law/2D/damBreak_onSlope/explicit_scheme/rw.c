@@ -92,6 +92,8 @@ event init(i = 0)
 //                h[] = (x>=wavelength/2.0 && x<=wavelength) ? INITDEPTHFUNC(disMag, wavelength, x) : 1.0;
                // h[] = 1.0;
                h[] = x<=(initDepth*aspectRatio) ? initDepth : 0.0;
+               // yet another IC
+               // h[] = x<=(initDepth*aspectRatio) ? (initDepth*sin(2.0*pi*x/(2.0*initDepth*aspectRatio))>=0.0 ? initDepth*sin(2.0*pi*x/(2.0*initDepth*aspectRatio)) : 0.0) : 0.0;
 //                u.x[] = (x>=wavelength/2.0 && x<=wavelength) ? pow(INITDEPTHFUNC(disMag, wavelength, x), 0.5) : 1.0;
                // u.x[] = 1.0;
                u.x[] = 0.0;
