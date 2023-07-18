@@ -218,7 +218,7 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
 	cfactor= 2
 	maxlevel = MAXLEVEL
 	minlevel = MINLEVEL
-    } ( (x>(XB-1.20*width) ) ? fabs(VORT*dL/1.0) : 0.0)
+    } ( (x>(XB-1.20*width) && x<(XB+2.75*width)) ? fabs(VORT*dL/1.0) : 0.0)
 
     EventScript { start = 0.0 step = RESTRICTTIMESTEP end = REFINETIMEEND } {
 
