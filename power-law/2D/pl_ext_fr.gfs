@@ -123,6 +123,8 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
 	    U = NORMALDEPTH*NORMALVELOCITY
         OBSREF = pow((x-(XB+width/2.0)),2.0)+pow((y-(LY/2.0)),2.0)<pow(width/2.0*1.50,2.0) ? 1.0 : 0.0
         BEGININIT = x<0.50 ? 1.0 : 0.0
+	# use this trick to get rid of Python
+	OBSREGIONRUNUP = ((fabs(KSLOPE(TP1X,TP2X,TP1Y,TP2Y)*x-y+BINTERCEPT(TP1X,TP2X,TP1Y,TP2Y))/pow((1.0+KSLOPE(TP1X,TP2X,TP1Y,TP2Y)*KSLOPE(TP1X,TP2X,TP1Y,TP2Y)), 0.50))<(1.20*CELLSIZE) && x<=(XB+width/2.0) && x>=XB && y>=(LY/2.0) && y<=(LY/2.0+width/2.0)) ? P : 0.0
     }
 
     Init { istep = 1 } {
@@ -155,6 +157,9 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
     U = (P > DRY && fabs(Velocity) > EPSILONU) ? (U+dt*tanTheta*GRAVITYCOEFF*P)/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
     V = (P > DRY && fabs(Velocity) > EPSILONU) ? V/(1.0+dt*muN/rhoMud*pow((1+2.0*nPower)/(nPower*P), nPower)*pow(Velocity, nPower-1)/P) :0.0
     P = (P > DRY ? P : 0.)
+
+	# use this trick to get rid of Python
+	OBSREGIONRUNUP = ((fabs(KSLOPE(TP1X,TP2X,TP1Y,TP2Y)*x-y+BINTERCEPT(TP1X,TP2X,TP1Y,TP2Y))/pow((1.0+KSLOPE(TP1X,TP2X,TP1Y,TP2Y)*KSLOPE(TP1X,TP2X,TP1Y,TP2Y)), 0.50))<(1.20*CELLSIZE) && x<=(XB+width/2.0) && x>=XB && y>=(LY/2.0) && y<=(LY/2.0+width/2.0)) ? P : 0.0
     }
     
     Init { step = TOUTPUT } {
@@ -263,6 +268,11 @@ NUMBOX NUMSEG GfsRiver GfsBox GfsGEdge {
             rm obliqueSlice-*
         }
     }
+
+# use this trick to get rid of Python
+    OutputScalarNorm { istep = 1 } {
+      awk '{printf ("%g %g %g \n", $3, $9, $9/NORMALDEPTH); fflush(stdout); }' > runupFront
+  } { v = OBSREGIONRUNUP }
 
     OutputLocation { step = 1.00 } slice-%g gaugeLoc
 
