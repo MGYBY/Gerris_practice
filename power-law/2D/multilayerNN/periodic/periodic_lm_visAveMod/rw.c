@@ -1,363 +1,277 @@
-// #include "grid/multigrid1D.h"
-#include "grid/bitree.h"
+/**
+# Steady-uniform flow (normal flow) simulation
+Based on dimensional variables.
+
+## Problem
+
+# Code
+*/
 // #include "grid/cartesian1D.h"
-#include "./saint-venant-power-law.h"
-#include "utils.h"
+#include "grid/bitree.h"
+#include "./saint-venantNN.h"
 
-#define FR (0.80)
-#define n_coeff 0.13961
-#define ALPHA (1/pow(FR,2.0))
+// Rheological properties
+#define tauY 62.3498
+#define muN 18.87556
+#define nHB 0.30491
 
-#define normalDepth 1.00
-#define normalVel 1.00
+#define rhoFluid 2429.32
+#define gravity 9.81
+#define sinTheta 0.06
+#define cosTheta (pow(1.0-sinTheta*sinTheta,0.50))
+#define So (sinTheta/cosTheta)
+#define gPrime (gravity*cosTheta)
 
-#define velThreshold 1.e-5
+#define froude 0.80
+#define normalDepth 0.092627999
+#define normalVel (froude*pow(gPrime*normalDepth,0.50))
+#define alphaCoeff (tauY/(rhoFluid*gravity*normalDepth*sinTheta))
+#define normalMaxVel (normalVel/(1.0-nHB/(2.0*nHB+1.0)*(1.0-alphaCoeff)))
+#define colorbarMax (normalMaxVel*2.01)
 
-// double alpha_coeff = 40.0;
-// double lx = 2.878;
-#define disMag 0.20
-// double betaCoeff = 0.0;
-#define simTime 40.0
-// double distPeriod = 1.0;
-// #define wavelength (3.0/pow(FR,2.0))
-// #define distPeriod (2.0/(FR*FR))
-#define distPeriod (2.0)
-#define OUTPUTTIME1 10
-// #define OUTPUTTIME2 0.1
-// #define OUTPUTTIME3 0.1
-// #define OUTPUTPERIOD 0.1
-// #define OUTPUTPERIOD2 0.1
-#define OUTPUTPLOT1 1.0
-// #define PLOTPERIOD 0.1
-// #define OUTPUTPLOT2 0.1
-// #define DOMAINLENGTH (299.9/pow(FR,2.0))
-#define DOMAINLENGTH (2.0)
+#define piVal 3.14159265
+#define disAmp 0.10
 
-#define XFROPERIOD 1.0
-
-#define initialStageTime 2.0
-#define restrictDt 5.0e-4
-
-// #define INITDEPTHFUNC(amp, len, xCoord) (1.0*(1.0+amp*sin(2.0*M_PI*(xCoord-len/2.0)/len)))
-#define INLETDEPTHBC(amp, time, period) (1.0*(1.0+amp*sin(2.0*M_PI*(time)/period)))
+#define DOMAINLENGTH (2.0*normalDepth/So)
+#define PLOTRANGEMAX (2.25*normalDepth)
 
 #define MAXLEVEL 11
 #define MINLEVEL 3
 #define INITLEVEL 11
 
-#define inletRefLen (50.0*DOMAINLENGTH/pow(2, MAXLEVEL))
-
-#define WARMUP (0.0*distPeriod)
-
-// h[left] = dirichlet( (t-WARMUP)<=(distPeriod/2.0) && (t-WARMUP)>=0 ? INLETDEPTHBC(disMag, (t-WARMUP), distPeriod) : 1.0 );
-// u.n[left] = dirichlet( (t-WARMUP)<=(distPeriod/2.0) && (t-WARMUP)>=0 ? pow(INLETDEPTHBC(disMag, (t-WARMUP), distPeriod), 0.5) : 1.0 );
-//
-// u.n[right] = neumann(0.);
-// h[right] = neumann(0.);
-
-int main()
-{
-     L0 = DOMAINLENGTH;
-//      N = 2048;
-     init_grid (1 << INITLEVEL);
-     // alphaCoeff = ALPHA;
-     G = ALPHA;
-     betaCoeff = (2.0*(1.0+2.0*n_coeff))/(2.0+3.0*n_coeff);
-     // nCoeff = n_coeff;
-     
-     CFL = 0.399; // CFL number should be sufficiently small
-
-     theta = 1.20;
-//      theta = 1.0;
-
-     // note that we are using the hump periodic configuration
-     periodic (right);
-
-     run();
-}
-
-scalar re[], fr[], frGrad[];
-scalar te[], pe[], ke[];
-scalar depthGrad[];
-
-event init(i = 0)
-{
-     foreach ()
-     {
-               zb[] = 0.0;
-               // eta[] = 1.0 + disMag * sin(2. * pi * x / lx);
-               // h[] = 1.0;
-//                h[] = (x>=wavelength/2.0 && x<=wavelength) ? INITDEPTHFUNC(disMag, wavelength, x) : 1.0;
-               h[] = normalDepth*(1.0 + disMag * sin(2. * pi * x / DOMAINLENGTH));
-//                h[] = 0.0;
-//                u.x[] = (x>=wavelength/2.0 && x<=wavelength) ? pow(INITDEPTHFUNC(disMag, wavelength, x), 0.5) : 1.0;
-               u.x[] = normalVel;
-//                u.x[] = 0.0;
-
-               depthGrad[] = fabs(h[-1]-h[1])/Delta;
-
-               re[] = pow(u.x[], (2.0-n_coeff))*pow(h[], n_coeff);
-               fr[] = h[]>dry ? u.x[]/(pow(h[], 0.50)) : 0.0;
-     }
-
-}
-
-event dtMax(t = 0; t<=initialStageTime; t+=restrictDt)
-{
-
-}
-
-event calcDepthGrad(i++)
-{
-     foreach()
-     {
-          depthGrad[] = fabs(h[-1]-h[1])/Delta;
-          frGrad[] = fabs(fr[-1]-fr[1])/Delta;
-     }
-}
-
-// static double powerLawFriction(double u, double h, double n)
-// {
-//      double rhs;
-//      rhs = G*so - mun/rho*pow(((1.+2.*n)/n*u/h), n)/h;
-//      return rhs;
-// }
-
-// bottom friction
-event friction(i++)
-{
-     // double uMed=0.0;
-     foreach ()
-     {
-          // rk2tvd
-          // if (h[] > dry) {
-          //      uMed = u.x[] + dt * powerLawFriction(u.x[], h[], n_coeff);
-          //      u.x[] = 0.5*u.x[]+0.5*uMed+0.5*dt*powerLawFriction(uMed, h[], n_coeff);
-          // }
-          // else {
-          //      u.x[] = 0.0;
-          // }
-
-          // rk3tvd
-          // if (h[] > dry && u.x[]>velThreshold ) {
-          //      uMed = u.x[] + dt * powerLawFriction(u.x[], h[], n_coeff);
-          //      uMed = (3.0/4.0)*u.x[] + (1.0/4.0)*uMed + (1.0/4.0)*dt*powerLawFriction(uMed, h[], n_coeff);
-          //      u.x[] = (1.0/3.0)*u.x[]+(2.0/3.0)*uMed+(2.0/3.0)*dt*powerLawFriction(uMed, h[], n_coeff);
-          // }
-          // else {
-          //      u.x[] = 0.0;
-          // }
-
-          //linearized backeard Euler
-//           u.x[] = h[]>dry && u.x[]>velThreshold  ? (u.x[] + dt)/(1.0+dt*(1.0/h[])*((pow(u.x[], (n_coeff-1.0)))/(pow(h[], n_coeff)))) : 0.0;
-          u.x[] = h[]>dry && u.x[]>velThreshold  ? (u.x[] + dt/pow(FR, 2.0))/(1.0+dt/pow(FR, 2.0)*pow(u.x[], (n_coeff-1.0))/pow(h[], (n_coeff+1.0))) : 0.0;
-          // uMed = u.x[] + dt * chezyBedFriction(u.x[], h[], cf);
-          // uMed = (3. / 4.) * u.x[] + (1. / 4.) * uMed + (1. / 4.) * dt * chezyBedFriction(uMed, h[], cf);
-          // u.x[] = (1. / 3.) * u.x[] + (2. / 3.) * uMed + (2. / 3.) * dt * chezyBedFriction(uMed, h[], cf);
-
-          // u.x[] = (u.x[] + G * So * dt) / (1. + (cf / (2.)) * dt * u.x[] / (h[]));
-
-          re[] = pow(u.x[], (2.0-n_coeff))*pow(h[], n_coeff);
-          fr[] = h[]>dry ? u.x[]/(pow(h[], 0.50)) : 0.0;
-     }
-     boundary((scalar *){u.x}); // note that the input should be a list (at least for 1d)
-}
-
-// record max depth
-event hmaxUmax (i+=50)
-{
-     double maxDepth = 0.0;
-     double maxVel = 0.0;
-     double maxDepthLocX = 0.0;
-     double maxDepthVel = 0.0;
-     double maxVelLocX = 0.0;
-     double maxVelDepth = 0.0;
-     FILE *fp2 = fopen("maxDepth", "a+");
-     FILE *fp3 = fopen("maxVel", "a+");
-     FILE *fp4 = fopen("maxFr", "a+");
-     foreach ()
-     {
-           if (h[]>maxDepth){
-                maxDepth = h[];
-                maxDepthLocX = x;
-                maxDepthVel = u.x[];
-           }
-
-           if (u.x[]>maxVel){
-                maxVel = u.x[];
-                maxVelLocX = x;
-                maxVelDepth = h[];
-           }
-     }
-     stats s1 = statsf (re);
-     stats s2 = statsf (fr);
-     fprintf(fp2, "%.10g %.10g %.10g %.10g %.10g \n", t, maxDepth, maxDepthLocX, maxDepthVel, s1.max);
-     fprintf(fp3, "%.10g %.10g %.10g %.10g \n", t, maxVel, maxVelLocX, maxVelDepth);
-     fprintf(fp4, "%.10g %.10g \n", t, s2.max);
-     fclose(fp2);
-     fclose(fp3);
-     fclose(fp4);
-}
-
-event hFront1 (t=0; i+=4; t<XFROPERIOD)
-{
-     double aveDepth = 0.0;
-     double aveVel = 0.0;
-     double xf = 0.0;
-     FILE *fp3 = fopen("frontPosMod", "a+");
-     foreach ()
-     {
-          xf = h[] > dry ?  max(xf,x) :  xf ;
-          aveDepth += (h[]>=dry ? Delta*h[] : 0.0);
-          aveVel += (h[]>=dry ? Delta*u.x[] : 0.0);
-     }
-     fprintf(fp3, "%.10g %.10g %.10g %.10g \n", t, xf, (aveDepth/xf), (aveVel/xf) );
-     fclose(fp3);
-}
-
-event hFront2 (t=XFROPERIOD; t<=simTime; i+=80)
-{
-     double aveDepth = 0.0;
-     double aveVel = 0.0;
-     double xf = 0.0;
-     FILE *fp3 = fopen("frontPosMod", "a+");
-     foreach ()
-     {
-          xf = h[] > dry ?  max(xf,x) :  xf ;
-          aveDepth += (h[]>=dry ? Delta*h[] : 0.0);
-          aveVel += (h[]>=dry ? Delta*u.x[] : 0.0);
-     }
-
-     fprintf(fp3, "%.10g %.10g %.10g %.10g \n", t, xf, (aveDepth/xf), (aveVel/xf) );
-     fclose(fp3);
-}
-
-// event energyContent(i+=50)
-// {
-//      // Vallis textbook P65.
-//      FILE *fp2 = fopen("energyContent", "a+");
-//      foreach ()
-//      {
-//           te[] = 0.50*rho*h[]*pow(u.x[], 2.0) + 0.50*rho*G*h[];
-//           ke[] = 0.50*rho*h[]*pow(u.x[], 2.0);
-//           pe[] = 0.50*rho*G*h[];
-//      }
-//      stats s1 = statsf (te);
-//      stats s2 = statsf (ke);
-//      stats s3 = statsf (pe);
-//      fprintf(fp2, "%g %g %g %g\n", t, s1.sum, s2.sum, s3.sum);
-//      fclose(fp2);
-// }
-
-// event slopeCalc(i+=50)
-// {
-//      double slopeVal = 0.0;
-//      double endXCoord = 0.0;
-//      double beginDepth = 0.0;
-//      double endDepth = 0.0;
-//      int count = 0;
-//      FILE *fp1 = fopen("slope", "a+");
-//      foreach()
-//      {
-//           if(count<1)
-//           {
-//                beginDepth = h[];
-//                endDepth = h[];
-// //                if (h[1]-h[]<0)
-// //                {
-// //                     break;
-// //                }
-//           }
-//           else if (h[]-h[-1]>=0 && h[1]-h[]<0 && h[2]-h[1]<0)
-//           {
-//                endDepth = h[];
-//                endXCoord = x;
-//                break;
-//           }
-//           count += 1;
-//      }
-//      slopeVal = (endXCoord-0.0)>1.e-10 && count>=1 ? (endDepth-beginDepth)/(endXCoord-0.0) : 0.0;
-//      fprintf(fp1, "%g %g \n", t, slopeVal);
-//      fclose(fp1);
-// }
+#define simTime 40.0
+#define outputInterval 0.50
 
 /**
-Visualise the wave profile
-*/
+ 
+### Non Newtonian viscosity
+ The definition of viscosity as a function of shear:
+ */
 
-void plot_profile(double t, FILE *fp)
-{
-     fprintf(fp,
-             "set term pngcairo enhanced size 800,600 font \",10\"\n"
-             "set output 't%g.png'\n"
-             "set title 't = %.2f'\n"
-             "plot [0:][0:]'-' u 1:2 w l lw 2\n",
-             t, t);
-     foreach ()
-     {
-               fprintf(fp, "%g %g\n", x, h[]);
-     }
-     fprintf(fp, "e\n\n");
-     fflush(fp);
+// double nu_eq(double shear,double pipi){
+double nu_eq(double shear){
+  double nu_eq;
+  nu_eq = muN/rhoFluid*pow(sqrt(sq(shear) + sq(1.e-10)), (nHB-1.0))+tauY/rhoFluid/(sqrt(sq(shear) + sq(1.e-10)));
+  // nu_eq = muN/rhoFluid*pow(sqrt(sq(shear) + sq(1.e-10)), (nHB-1.0))+tauY/rhoFluid/(sqrt(sq(shear) + sq(1.e-10)))*(1.-exp((-1.)*papaCoeff*sqrt(sq(shear) + sq(1.e-10))));
+  return nu_eq;
 }
 
-event gnuplotOutput1(t = 0; t <= simTime; t += OUTPUTPLOT1)
+double hbProfile (double z, double ht)
 {
-     static FILE *fp = popen("gnuplot 2> /dev/null", "w");
-     plot_profile(t, fp);
+  // general normal-flow profile of Herschel-Bulkley fluids
+  double zo;
+  zo = ht*(1.-alphaCoeff);
+  // zo = normalDepth*alphaCoeff;
+  // if (z<=(normalDepth*alphaCoeff)) {
+  if (z<=zo) {
+    // shear zone
+    return (nHB/(nHB+1.)*pow((rhoFluid*gravity*sinTheta/muN*pow(zo, (nHB+1.))), (1./nHB))*(1.-pow((1.-z/zo),((nHB+1.)/nHB))));
+  }
+  else {
+    // plug zone
+    return (nHB/(nHB+1.)*pow((rhoFluid*gravity*sinTheta/muN*pow(zo, (nHB+1.))), (1./nHB)));
+  }
 }
 
-// event gnuplotOutput2(t = PLOTPERIOD; t += OUTPUTPLOT2)
-// {
-//      static FILE *fp = popen("gnuplot 2> /dev/null", "w");
-//      plot_profile(t, fp);
-// }
+char s[80];
+scalar depthGrad[], uAve[];
 
-event output1(t = 0.0; t <= simTime; t += OUTPUTTIME1)
-{
-     char name[30];
-     sprintf(name, "out-%g.txt", t);
-     FILE *fp = fopen(name, "w");
-     foreach ()
-          fprintf(fp, "%g %g %g %g %g \n", x, h[], u.x[], re[], fr[]);
-//      fprintf(fp, "\n");
-     fclose(fp);
+int main() {
+  L0 = DOMAINLENGTH;
+  // G  = gravity;
+  // change to g' for rotated axis frame
+  G = gPrime;
+  init_grid(1 << (INITLEVEL));
+  nl = 50;
+  nu = 1.; // dummy
+
+  CFL = 0.40;
+
+  periodic (right);
+
+  run();
 }
 
-// event output2(t = OUTPUTPERIOD; t <= OUTPUTPERIOD2; t += OUTPUTTIME2)
-// {
-//      char name[30];
-//      sprintf(name, "out-%g.txt", t);
-//      FILE *fp = fopen(name, "w");
-//      foreach ()
-//           fprintf(fp, "%g %g %g %g %g \n", x, h[], u.x[], re[], fr[]);
-// //      fprintf(fp, "\n");
-//      fclose(fp);
-// }
-//
-// event output3(t = OUTPUTPERIOD2; t <= simTime; t += OUTPUTTIME3)
-// {
-//      char name[30];
-//      sprintf(name, "out-%g.txt", t);
-//      FILE *fp = fopen(name, "w");
-//      foreach ()
-//           fprintf(fp, "%g %g %g %g %g \n", x, h[], u.x[], re[], fr[]);
-// //      fprintf(fp, "\n");
-//      fclose(fp);
-// }
+/**
+## Initialization  */
+event init (i = 0) {
+  /**
+  We initialize *h*. */
+  foreach(){
+    double totalDepth = normalDepth*(1.0+disAmp*sin(2. * pi * x / DOMAINLENGTH));
+    double z = zb[];
+    // periodic BC cannot use realistic topo
+    // zb[] = -x*sinTheta;
+    zb[] = 0.0;
+    h[] = totalDepth;
 
-// event output(i += 2; t <= 40)
-//     output_gauges(gauges, {eta});
+    depthGrad[] = fabs(h[-1]-h[1])/(2.*Delta);
 
-//TODO: add AMR features
-// event adapt (i++) {
-// }
-// AMR features
-event adapt1 (t=0.10; i++) {
-//      adapt_wavelet({h, depthGrad, frGrad}, (double[]){normalDepth/260.0, 1.0e-3, 1.0e-3}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
-     adapt_wavelet({h }, (double[]){normalDepth/800.0}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
+    for (int l = 0; l < nl; l++) {
+      z += h[]/2.;
+      u = ul[l];
+      u.x[] = hbProfile(z, totalDepth);
+      z += h[]/2.;
+
+      uAve[] = pow((u.x[]*u.x[]+u.y[]*u.y[]),0.50);
+    }
+
+    uAve[] /= (h[]>dry ? h[] : HUGE);
+    }
+}
+
+  /**
+## Output
+  We print the elevation  */
+event acceleration (i++) {
+  foreach(){
+    depthGrad[] = fabs(h[-1]-h[1])/(2.*Delta);
+
+    for (int l = 0; l < nl; l++) {
+      u = ul[l];
+      u.x[] += dt*gravity*sinTheta;
+
+      uAve[] = pow((u.x[]*u.x[]+u.y[]*u.y[]),0.50);
+    }
+
+    uAve[] /= (h[]>dry ? h[] : HUGE);
+  }
+    boundary ((scalar *){u});
+}
+
+/*
+ * AMR here
+ *
+ */
+event adapt1 (i++) {
+  adapt_wavelet({h, depthGrad, uAve}, (double[]){normalDepth/500.0, 0.005, normalVel/325.0}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 //      astats s = adapt_wavelet({h, depthGrad}, (double[]){1.0/300.0, 0.00016}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
   // astats s = adapt_wavelet({ depthGrad}, (double[]){ 0.00010}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 //   fprintf(stderr, "# refined %d cells, coarsened %d cells\n", s.nf, s.nc);
-//      refine( x<=inletRefLen && t<=(2.0) && level < MAXLEVEL);
 }
+
+event hmax(i+=25)
+{
+     double maxDepth = normalDepth;
+     double maxDepthLocX = 0.0;
+     double maxDepthVel = 0.0;
+     double minDepth = normalDepth;
+     double minDepthLocX = 0.0;
+	 double max2LocX = 0.0;
+
+     FILE *fp2 = fopen("maxMinDepth", "a+");
+     // FR: maxDepth, minDepth, H, waveLength
+     foreach ()
+     {
+               if ( h[]>h[1] && h[]>h[-1] && x>maxDepthLocX && h[]>(normalDepth*(1.0+disAmp))){
+                    maxDepth = h[];
+                    maxDepthLocX = x;
+                    maxDepthVel = u.x[];
+               }
+     }
+	 foreach ()
+	 {
+		if (h[]<h[1] && h[]<h[-1] && h[-1]<h[-2] && h[1]<h[2] && x>minDepthLocX && x<maxDepthLocX ) {
+                    minDepthLocX = x;
+                    minDepth = h[];
+               }
+
+		else if (h[]>h[1] && h[]>h[-1] && h[1]>h[2] && h[-1]>h[-2] && h[]>1.1 && x<maxDepthLocX && x>max2LocX) {
+                    max2LocX = x;
+               }
+	 }
+     fprintf(fp2, "%g %13.9f %13.9f %13.9f %13.9f %13.9f \n", t, maxDepthLocX, maxDepth, minDepth, (maxDepth-minDepth), (maxDepthLocX-max2LocX));
+     fclose(fp2);
+}
+
+/**
+save the hight the flux and the yield surface as a function of time
+*/ 
+event output  (t = 0; t <= simTime; t+=outputInterval){
+  sprintf (s, "slice-%g.txt", t);
+  FILE * fp1 = fopen (s, "w"); 
+  foreach(serial){
+    double zCoord = zb[];
+    for (int l = 0; l < nl; l++) {
+      zCoord += layer[l]*h[]*0.50;
+      u = ul[l];
+      fprintf (fp1, "%g %g %g \n", x, zCoord, u.x[] );
+      zCoord += layer[l]*h[]*0.50;
+    }
+  }
+  fclose(fp1);
+
+  sprintf (s, "depth-%g.txt", t);
+  FILE * fp2 = fopen (s, "w"); 
+  foreach (serial) {
+    fprintf (fp2, "%g %g %g \n", x, h[], uAve[]);
+  }
+  fclose(fp2);
+}
+
+/**
+Post-processing visualization module
+*/ 
+void setup (FILE * fp)
+{
+  // FIXME: other customized color schemes
+  fprintf (fp,
+	   "set pm3d map interpolate 2,2\n"
+// 	   "# jet colormap\n"
+// 	   "set palette defined ( 0 0 0 0.5647, 0.125 0 0.05882 1, 0.25"
+// 	   " 0 0.5647 1, 0.375 0.05882 1 0.9333, 0.5 0.5647 1 0.4392, 0.625"
+// 	   " 1 0.9333 0, 0.75 1 0.4392 0, 0.875 0.9333 0 0, 1 0.498 0 0 )\n"
+//        "# rainbow colormap\n"
+//        "set palette rgb 33,13,10\n"
+       "load './turbo.pal'\n"
+//        "# green-red-violet colormap\n"
+//        "set palette rgb 3,11,6\n"
+	   "unset key\n"
+	   "set cbrange [0:%g]\n"
+	   "set xlabel 'x'\n"
+	   "set ylabel 'height'\n"
+	   "set xrange [%g:%g]\n"
+	   "set yrange [0.0:%g]\n"
+     "set lmargin at screen 0.1\n"
+     "set rmargin at screen 0.9\n", colorbarMax, 0.0, DOMAINLENGTH, PLOTRANGEMAX
+	   );
+}
+
+void plot (FILE * fp)
+{
+  fprintf (fp,
+	   "set title 't = %g'\n"
+	   "sp '-' u 1:2:3\n", t);
+  foreach (serial) {
+    double z = zb[];
+    // fprintf (fp, "%g %g %g\n", x, max(0.5, z), u.x[]);
+    for (int l = 0; l < nl; l++) {
+      z += layer[l]*h[]*0.50;
+      u = ul[l];
+      // z += h[]/2.0;
+      fprintf (fp, "%g %g %g\n", x, z, u.x[]);
+      // z += h[]/2.0;
+      z += layer[l]*h[]*0.50;
+    }
+    fprintf (fp, "\n");
+  }
+  fprintf (fp, "e\n\n");
+  //  fprintf (fp, "pause 1\n");
+  fflush (fp);  
+}
+
+event gnuplot (t += outputInterval; t <= simTime)
+{
+  static FILE * fp = popen ("gnuplot 2> /dev/null", "w");
+  fprintf (fp,
+	   "set term pngcairo font \",10\" size 1024,320\n"
+	   "set output 'plot-%g.png'\n", t);
+  if (i == 0)
+    setup (fp);
+  plot (fp);
+}
+
+// event moviemaker (t = end) {
+//     system ("for f in plot-*.png; do convert $f ppm:- && rm -f $f; done | "
+// 	    "ppm2mp4 movie.mp4");
+// }
