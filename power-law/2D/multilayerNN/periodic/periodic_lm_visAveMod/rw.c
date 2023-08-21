@@ -108,16 +108,16 @@ event init (i = 0) {
     depthGrad[] = fabs(h[-1]-h[1])/(2.*Delta);
 
     for (int l = 0; l < nl; l++) {
-      z += h[]/2.;
+      // z += h[]/2.;
+      z += h[]*layer[l]/2.;
       u = ul[l];
       u.x[] = hbProfile(z, totalDepth);
-      z += h[]/2.;
+      z += h[]*layer[l]/2.;
+      // z += h[]/2.;
 
-      uAve[] = pow((u.x[]*u.x[]+u.y[]*u.y[]),0.50);
+      uAve[] += pow((u.x[]*u.x[]+u.y[]*u.y[]),0.50)*layer[l];
     }
-
-    uAve[] /= (h[]>dry ? h[] : HUGE);
-    }
+  }
 }
 
   /**
@@ -126,15 +126,14 @@ event init (i = 0) {
 event acceleration (i++) {
   foreach(){
     depthGrad[] = fabs(h[-1]-h[1])/(2.*Delta);
+    uAve[] = 0.0;
 
     for (int l = 0; l < nl; l++) {
       u = ul[l];
       u.x[] += dt*gravity*sinTheta;
 
-      uAve[] = pow((u.x[]*u.x[]+u.y[]*u.y[]),0.50);
+      uAve[] += pow((u.x[]*u.x[]+u.y[]*u.y[]),0.50)*layer[l];
     }
-
-    uAve[] /= (h[]>dry ? h[] : HUGE);
   }
     boundary ((scalar *){u});
 }
