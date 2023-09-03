@@ -103,6 +103,8 @@ event init (i = 0) {
     zb[] = 0.0;
     h[] = totalDepth;
 
+    uAve[] = 0.0;
+
     depthGrad[] = fabs(h[-1]-h[1])/(2.*Delta);
 
       for (int l = 0; l < nl; l++) {
@@ -123,6 +125,7 @@ event init (i = 0) {
 event acceleration (i++) {
   foreach(){
     depthGrad[] = fabs(h[-1]-h[1])/(2.*Delta);
+    uAve[] = 0.0;
 
       for (int l = 0; l < nl; l++) {
         u = ul[l];
@@ -140,7 +143,7 @@ event acceleration (i++) {
  *
  */
 event adapt1 (i++) {
-  adapt_wavelet({h, depthGrad, uAve}, (double[]){normalDepth/150.0, 0.01, normalVel/150.0}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
+  adapt_wavelet({h, depthGrad, uAve}, (double[]){normalDepth/200.0, 0.01, normalVel/200.0}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 //      astats s = adapt_wavelet({h, depthGrad}, (double[]){1.0/300.0, 0.00016}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
   // astats s = adapt_wavelet({ depthGrad}, (double[]){ 0.00010}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 //   fprintf(stderr, "# refined %d cells, coarsened %d cells\n", s.nf, s.nc);
