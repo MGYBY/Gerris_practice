@@ -11,3 +11,4 @@ The front-runner simulation.
 - [ ] Horizontal viscosity (not important).
 - [x] Other post-processing tools: Gnuplot, OriginLab, ...
 - [ ] FIXME: check the velocity field initialization. (+= may be wrong)
+- [ ] Periodic FR setup is trivial. Implement inlet-outlet BCs.
