@@ -116,6 +116,7 @@ int main() {
   nu = 1.; // dummy
 
   CFL_H = 0.30;
+  CFL = 0.35;
 
 //   periodic (right);
 
@@ -145,6 +146,9 @@ int main() {
 /**
 ## Initialization  */
 event init (i = 0) {
+  // A more robust remapping method
+  geometric_beta (1./3., true);
+
   /**
   We initialize *h*. */
   foreach(){
