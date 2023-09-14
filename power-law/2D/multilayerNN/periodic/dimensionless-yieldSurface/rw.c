@@ -222,13 +222,15 @@ event output  (t = 0; t <= simTime; t+=outputInterval){
         uVertGrad = (up.x[]-um.x[])/(layer[l+1]*h[]*0.50+layer[l]*h[]*1.50);
       }
 
-      if (uVertGrad<yieldSurfThre && detectYS<1.0)
+      if (uVertGrad<yieldSurfThre && detectYS<1.0 && bParam>1.e-5)
       {
         detectYS = 2.0;
         yieldSurf[] = zCoord-(layer[l-1]*h[]*0.50+layer[l]*h[]*0.50)*fabs((yieldSurfThre-uVertGrad)/(uVertGradPrevLayer-uVertGrad));
       }
 
-      fprintf (fp1, "%g %g %g %g \n", x, zCoord, u.x[], uVertGrad);
+      // output yield surface only for HB or BP
+      if(bParam>1.e-5)
+        fprintf (fp1, "%g %g %g %g \n", x, zCoord, u.x[], uVertGrad);
 
       zCoord += layer[l]*h[]*0.50;
 
