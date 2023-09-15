@@ -229,7 +229,7 @@ event output  (t = 0; t <= simTime; t+=outputInterval){
       }
 
       // output yield surface only for HB or BP
-      if(bParam>1.e-5)
+      // if(bParam>1.e-5)
         fprintf (fp1, "%g %g %g %g \n", x, zCoord, u.x[], uVertGrad);
 
       zCoord += layer[l]*h[]*0.50;
