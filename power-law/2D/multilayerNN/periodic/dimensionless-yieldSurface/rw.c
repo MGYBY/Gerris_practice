@@ -147,6 +147,8 @@ event adapt1 (i++) {
 //      astats s = adapt_wavelet({h, depthGrad}, (double[]){1.0/300.0, 0.00016}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
   // astats s = adapt_wavelet({ depthGrad}, (double[]){ 0.00010}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 //   fprintf(stderr, "# refined %d cells, coarsened %d cells\n", s.nf, s.nc);
+  refine(x<=10.0*L0/pow(2, MAXLEVEL) && level<MAXLEVEL);
+  refine(x>=L0-10.0*L0/pow(2, MAXLEVEL) && level<MAXLEVEL);
 }
 
 event hmax(i+=25)
