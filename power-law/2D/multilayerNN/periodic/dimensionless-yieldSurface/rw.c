@@ -120,20 +120,50 @@ event init (i = 0) {
 }
 
   /**
-## Output
-  We print the elevation  */
+## gravity source term  */
 event acceleration (i++) {
   foreach(){
     depthGrad[] = fabs(h[-1]-h[1])/(2.*Delta);
     uAve[] = 0.0;
+    double zCoord = zb[];
+    double uVertGrad = 0.0;
+    yieldSurf[] = 0.0;
 
       for (int l = 0; l < nl; l++) {
+        zCoord += layer[l]*h[]*0.50;
         u = ul[l];
         u.x[] += dt*grav;
 
         uAve[] += pow((u.x[]*u.x[]+u.y[]*u.y[]),0.50)*layer[l];
+
+        if (l>0 && l<(nl-1)) {
+        // middle layers
+        vector um = ul[l-1] ;
+        vector up = ul[l+1] ;
+        uVertGrad = (up.x[]-um.x[])/(layer[l-1]*h[]*0.50+layer[l+1]*h[]*0.50+layer[l]*h[]);
+      }
+      else if (l==(nl-1))
+      {
+        // top layer
+        vector um = ul[l-1] ;
+        vector up = ul[l] ;
+        uVertGrad = (up.x[]-um.x[])/(layer[l-1]*h[]*0.50+layer[l]*h[]*1.50);
+      }
+      else
+      {
+        // bottom layer
+        vector um = ul[l] ;
+        vector up = ul[l+1] ;
+        uVertGrad = (up.x[]-um.x[])/(layer[l+1]*h[]*0.50+layer[l]*h[]*1.50);
       }
 
+      if (uVertGrad<yieldSurfThre && yieldSurf[]<=0 && bParam>1.e-5)
+      {
+        yieldSurf[] = zCoord;
+      }
+
+      zCoord += layer[l]*h[]*0.50;
+      }
   }
     boundary ((scalar *){u});
 }
@@ -143,7 +173,9 @@ event acceleration (i++) {
  *
  */
 event adapt1 (i++) {
-  adapt_wavelet({h, depthGrad, uAve}, (double[]){normalDepth/200.0, 0.01, normalVel/200.0}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
+  // adapt_wavelet({h, depthGrad, uAve}, (double[]){normalDepth/200.0, 0.01, normalVel/200.0}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
+  // a more reasonable AMR criteria
+  adapt_wavelet({h, depthGrad, uAve, yieldSurf}, (double[]){normalDepth/300.0, 0.007, normalVel/300.0, normalDepth/150.0}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 //      astats s = adapt_wavelet({h, depthGrad}, (double[]){1.0/300.0, 0.00016}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
   // astats s = adapt_wavelet({ depthGrad}, (double[]){ 0.00010}, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 //   fprintf(stderr, "# refined %d cells, coarsened %d cells\n", s.nf, s.nc);
@@ -193,12 +225,10 @@ save the hight the flux and the yield surface as a function of time
 */ 
 event output  (t = 0; t <= simTime; t+=outputInterval){
   sprintf (s, "slice-%g.txt", t);
-  FILE * fp1 = fopen (s, "w"); 
+  FILE * fp1 = fopen (s, "w");
   foreach(serial){
     double zCoord = zb[];
     double uVertGrad = 0.0;
-    double uVertGradPrevLayer = 0.0;
-    double detectYS = 0.0;
     for (int l = 0; l < nl; l++) {
       zCoord += layer[l]*h[]*0.50;
       u = ul[l];
@@ -224,26 +254,17 @@ event output  (t = 0; t <= simTime; t+=outputInterval){
         uVertGrad = (up.x[]-um.x[])/(layer[l+1]*h[]*0.50+layer[l]*h[]*1.50);
       }
 
-      if (uVertGrad<yieldSurfThre && detectYS<1.0 && bParam>1.e-5)
-      {
-        detectYS = 2.0;
-        yieldSurf[] = zCoord-(layer[l-1]*h[]*0.50+layer[l]*h[]*0.50)*fabs((yieldSurfThre-uVertGrad)/(uVertGradPrevLayer-uVertGrad));
-      }
-
       // output yield surface only for HB or BP
       // if(bParam>1.e-5)
         fprintf (fp1, "%g %g %g %g \n", x, zCoord, u.x[], uVertGrad);
 
       zCoord += layer[l]*h[]*0.50;
-
-      uVertGradPrevLayer = uVertGrad;
-
     }
   }
   fclose(fp1);
 
   sprintf (s, "depth-%g.txt", t);
-  FILE * fp2 = fopen (s, "w"); 
+  FILE * fp2 = fopen (s, "w");
   foreach (serial) {
     fprintf (fp2, "%g %g %g %g \n", x, h[], uAve[], yieldSurf[]);
   }
