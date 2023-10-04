@@ -38,7 +38,7 @@ Based on dimensional variables.
 #define outputInterval 2.00
 
 #define visRegThre 1.01e-10
-#define yieldSurfThre 2.e-7
+#define yieldSurfThre 1.2e-10
 
 /**
  
@@ -49,7 +49,8 @@ Based on dimensional variables.
 // double nu_eq(double shear,double pipi){
 double nu_eq(double shear){
   double nu_eq;
-  nu_eq = rParam*pow(sqrt(sq(shear) + sq(visRegThre)), (nHB-1.0)) + (bParam/pow(froude,2.0))*1.0/(sqrt(sq(shear) + sq(visRegThre)));
+  // nu_eq = rParam*pow(sqrt(sq(shear) + sq(visRegThre)), (nHB-1.0)) + (bParam/pow(froude,2.0))*1.0/(sqrt(sq(shear) + sq(visRegThre)));
+  nu_eq = (rParam*pow(sqrt(sq(shear)), (nHB)) + (bParam/pow(froude,2.0)))/(sqrt(sq(shear)+visRegThre));
   // nu_eq = muN/rhoFluid*pow(sqrt(sq(shear) + sq(1.e-10)), (nHB-1.0))+tauY/rhoFluid/(sqrt(sq(shear) + sq(1.e-10)))*(1.-exp((-1.)*papaCoeff*sqrt(sq(shear) + sq(1.e-10))));
   return nu_eq;
 }
