@@ -51,6 +51,8 @@ double nu_eq(double shear){
   double nu_eq;
   // nu_eq = rParam*pow(sqrt(sq(shear) + sq(visRegThre)), (nHB-1.0)) + (bParam/pow(froude,2.0))*1.0/(sqrt(sq(shear) + sq(visRegThre)));
   nu_eq = (rParam*pow(sqrt(sq(shear)), (nHB)) + (bParam/pow(froude,2.0)))/(sqrt(sq(shear)+visRegThre));
+	// a more reasonable viscosity regularization
+	// nu_eq = rParam*pow(sqrt(sq(max(shear, visRegThre))), (nHB-1.0)) + (bParam/pow(froude,2.0))*1.0/(sqrt(sq(max(shear, visRegThre))));
   // nu_eq = muN/rhoFluid*pow(sqrt(sq(shear) + sq(1.e-10)), (nHB-1.0))+tauY/rhoFluid/(sqrt(sq(shear) + sq(1.e-10)))*(1.-exp((-1.)*papaCoeff*sqrt(sq(shear) + sq(1.e-10))));
   return nu_eq;
 }
