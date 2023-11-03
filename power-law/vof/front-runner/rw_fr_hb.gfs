@@ -1,0 +1,474 @@
+# Title: 2D VOF laminar sheet flow roll wave simulation
+#
+# Description:
+# Normal flow: H = 0.00209955m; U = 0.143386m/s; So=0.06.
+# Power-law fluid: n=0.4, mu_n=0.14, rho=1120
+
+# Normal Flow
+Define NORMALDEPTH 0.11686579
+Define GRAVITYCOEFF 9.81
+Define FR 0.200
+Define NORMALVEL 0.21395214
+Define CHANNELSIN 0.060
+Define CHANNELCOS (pow((1.0-pow(CHANNELSIN,2.0)),0.50))
+Define POWERLAWN 0.33333
+Define YIELDSTRESS 52.80
+
+# Domain extent
+Define LDOMAIN (52.0*NORMALDEPTH/CHANNELSIN)
+Define NUMBOX 13
+Define LBOX (LDOMAIN/NUMBOX)
+
+Define NUMTRANCELLS 32.0
+
+# disturbance parameters
+Define DISTAmp 0.225
+# if use non-periodic BC, a wavelength is also needed
+# Define DISTPERIOD 0.31352
+# Define DISTWAVELENGTH (21.6809*(pow(NORMALVEL,2.0))/(GRAVITYCOEFF*CHANNELSIN))
+Define DISTWAVELENGTH (2.0*NORMALDEPTH/CHANNELSIN)
+
+# Maximum refinement: guarantee more than 24 cell through normal depth
+Define MAXLEVEL 11
+Define MINLEVEL 1
+# Define MINLEVEL 1
+
+# max run-time
+Define TMAX 200.0
+Define TOUTPUT 0.125
+Define TSNAP 0.50
+Define TMOVIE 0.005 # dummy, as it may restrict time-step
+
+# mesh adaptivity parameters
+Define UEMAX (NORMALVEL/50.0) # dummy?
+
+# Bingham rheology model
+Define MUREF 17.80
+Define MUDRHO 1437.25
+Define BPARAM (YIELDSTRESS/(MUDRHO*CHANNELCOS*GRAVITYCOEFF*NORMALDEPTH*CHANNELSIN))
+
+Define AIRRHO (MUDRHO/100.10)
+Define AIRVIS ((MUREF*pow((NORMALVEL/NORMALDEPTH), (POWERLAWN-1.0))+YIELDSTRESS/(NORMALVEL/NORMALDEPTH))/80.0)
+
+#surface tension coefficient
+Define WEBER 100.0
+Define STSIGMA (MUDRHO*pow(NORMALVEL,2.0)*NORMALDEPTH/WEBER)
+
+# inlet temporally-varying BC
+Define HDIST(x) ((x>=(DISTWAVELENGTH/2.0-LBOX) && x<=(DISTWAVELENGTH-LBOX)) ? (NORMALDEPTH*(1.0+DISTAmp*sin(2.0*M_PI*x/DISTWAVELENGTH-M_PI))) : NORMALDEPTH)
+
+NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
+    # shift origin of the domain
+    x = 0.5 y = 0.5
+	# y = 0.5
+} {
+    Global {
+    double velDist (double x, double y, double hn, double un, double Lx, double amp) {
+        double uMax = 0.0;
+        uMax = NORMALVEL/(1.0-POWERLAWN/(2.0*POWERLAWN+1.0)*(1.0-BPARAM));
+        if (y<HDIST(x)) {
+	// "const-Fr" pattern seems to reduce fluid-air initial shear, compare to "const-q" pattern
+            if (y<=(1.0-BPARAM)*NORMALDEPTH) {
+                return (uMax*(pow(HDIST(x)/NORMALDEPTH, 0.50))*(1.0-pow((1.0-y/((1.0-BPARAM)*NORMALDEPTH)), (POWERLAWN+1.0)/POWERLAWN)));
+            }
+            else
+                return (uMax*(pow(HDIST(x)/NORMALDEPTH, 0.50)));
+        }
+        else if (y>=HDIST(x) && y<=(HDIST(x)+NUMTRANCELLS*LBOX/pow(2,MAXLEVEL))) {
+	// use this trick to reduce shear at interface
+            return (uMax*(pow(HDIST(x)/NORMALDEPTH, 0.50))*(((HDIST(x)+NUMTRANCELLS*LBOX/pow(2,MAXLEVEL)-y)/(NUMTRANCELLS*LBOX/pow(2,MAXLEVEL)))));
+        }
+        else return 0.0;
+    }
+
+    double init_vel_dist( double y ) {
+        if (y<NORMALDEPTH) {
+	// "const-Fr" pattern seems to reduce fluid-air initial shear, compare to "const-q" pattern
+            return ((1.0+2.0*POWERLAWN)/(1.0+POWERLAWN)*(FR*pow(CHANNELCOS*GRAVITYCOEFF*NORMALDEPTH, 0.50))*(1.0-pow((1.0-y/NORMALDEPTH), (1.0+POWERLAWN)/POWERLAWN)));
+        }
+        else if (y>=NORMALDEPTH && y<=(NORMALDEPTH+8*LBOX/pow(2,MAXLEVEL))) {
+	// use this trick to reduce shear at interface
+            return ((1.0+2.0*POWERLAWN)/(1.0+POWERLAWN)*(FR*pow(CHANNELCOS*GRAVITYCOEFF*NORMALDEPTH, 0.50))*(((NORMALDEPTH+8*LBOX/pow(2,MAXLEVEL)-y)/(8*LBOX/pow(2,MAXLEVEL)))));
+        }
+        else return 0.0;
+    }
+
+    double heightDist (double x,  double hn, double Lx, double amp) {
+        return (HDIST(x));
+    }
+
+    double hydroPressureDist(double y, double x, double Lx, double amp, double hn, double rhoFluid) {
+        double gy = GRAVITYCOEFF*CHANNELCOS;
+        // double hDist = hn*(1.0+amp*sin(2.0*M_PI*x/Lx));
+        if (y<HDIST(x)) return (rhoFluid*gy*y);
+        else return 0.0;
+    }
+
+	double var (double Tf, double min, double max) {
+	// assume filtered by default
+    return min + CLAMP(Tf, 0, 1)*(max - min);
+	}
+
+	double set_density (double Tf) {
+	    return var(Tf, AIRRHO, MUDRHO);
+    }
+
+	double MU (double fm, double d2) {
+	    double m, mu;
+	    double N=POWERLAWN;
+	    double mu_max = 250.10;
+
+	    if (d2 > 0.)
+            m = MUREF*exp ((N - 1.)*log (d2*pow(2,0.5))) + YIELDSTRESS/((d2 * pow(2,0.5)));
+	    else {
+		    if (N < 1.) m = mu_max;
+		    else m = N == 1. ? MUREF : 0.;
+		}
+		mu = MIN (m, mu_max);
+
+		// harmonic mean
+		return 1.0/((1.0-fm)/AIRVIS+fm/mu);
+		// algebraic mean
+		// return AIRVIS + CLAMP(fm, 0, 1)*(mu - AIRVIS);
+    }
+    }
+
+    PhysicalParams { L = LBOX }
+
+    Time { end = TMAX dtmax = 5e-2 }
+    
+    AdvectionParams { cfl = 0.450 }
+
+    # We need to tune the solver
+    # do not tune solver for now
+    ApproxProjectionParams { tolerance = 3.333e-4 nitermax = 300 }
+    ProjectionParams { tolerance = 3.333e-4  nitermax = 300 }
+
+    # VOF tracer and interface positions
+    # VariableTracerVOF T
+    # a more consistent VOF method
+    VariableTracerVOFHeight T
+
+    VariablePosition X T x
+    VariablePosition Y T y
+
+    # note that the filter would greatly improve convergence for large density and viscosity ratio
+    # Basilisk code use 2 times filter by default
+#     VariableFiltered Tf T 2
+    # VariableFiltered Tf T 4
+    VariableFiltered Tf T 3
+    PhysicalParams { alpha = 1./set_density(Tf) }
+
+    # Solid (cube(0.051887875, (2.1*(0.00209955)+0.5*0.10377575*2), 0.0, 0.10377575*2))
+    # that helps convergence
+    Solid (cube(LDOMAIN/2.0, (4.760*(NORMALDEPTH)+0.5*LDOMAIN*2), 0.0, LDOMAIN*2))
+    RefineSolid MAXLEVEL
+
+    # Bingham rheology viscosity
+    SourceViscosity {} {
+        double muVal = (MU(Tf,D2));
+        return muVal;
+    }  {
+	beta = 0.5
+	tolerance = 2e-6
+	# beta = 1
+	# nitermin = 5
+	nitermax = 200
+    }
+
+    # BAsed on unfiltered
+    VariableCurvature K T Kmax
+    SourceTension T STSIGMA K
+
+    # initial conditions
+    Refine ((y>0.0)&&(y<1.60*NORMALDEPTH) ? MAXLEVEL : MINLEVEL)
+    InitFraction T (heightDist(x,NORMALDEPTH,LDOMAIN,DISTAmp)-y)
+    Init {} {
+        # Initial normal flow
+	U = velDist(x, y, NORMALDEPTH, NORMALVEL, LDOMAIN, DISTAmp)
+    V = 0.0
+    P = hydroPressureDist(y,x,LDOMAIN,DISTAmp,NORMALDEPTH,MUDRHO)
+    }
+
+    # Track a "band" around the interface to resolve surface gradients
+    # properly
+    AdaptFunction { istep = 1 } {
+	cmax = 0.0
+    # cmax = 1e-2
+	maxlevel = MAXLEVEL
+    minlevel = MINLEVEL
+    } (Tf > 0 && Tf < 1)
+
+    # AMR to resolve boundary-layer
+    AdaptFunction { istep = 1 } {
+	cmax = 0
+    cfactor = 2
+	maxlevel = (y<(11.510*LBOX/pow(2,MAXLEVEL))) ? MAXLEVEL : (MINLEVEL+1)
+    # minlevel = MINLEVEL
+    } Tf
+
+    # AdaptError { istep = 1 } { cmax = 0.01 maxlevel = MAXLEVEL } U
+    # AdaptError { istep = 1 } { cmax = 1e-2 maxlevel = max_level } V
+
+    # helpful for wave front resolution
+    AdaptVorticity { istep = 1 } { cmax = 0.2425 maxlevel = (y<NORMALDEPTH*4.0 ? MAXLEVEL : (MINLEVEL+1)) minlevel = MINLEVEL}
+
+    # gravity
+    Source V (-1.0)*GRAVITYCOEFF*CHANNELCOS*T
+    Source U GRAVITYCOEFF*CHANNELSIN*T
+
+    OutputTime { istep = 10 } stderr
+    OutputProjectionStats { istep = 10 } stderr
+    OutputDiffusionStats { istep = 10 } stderr
+
+    OutputTime { istep = 10 } ./times-stats.txt
+
+    # remove ejected droplets (just in case)
+    # don't know whether this would help. mass conservation problem?
+    # remove SGS droplets
+    RemoveDroplets { istep = 1 } T 3
+    RemoveDroplets { istep = 10 } T 10 (y>NORMALDEPTH*4.50 ? T : 0)
+
+    OutputSimulation { step = TOUTPUT } snapshot-%g.gfs { variables = T,Tf,U,V,P }
+    OutputSimulation { step = TSNAP } snapshotFull-%g.gfs
+    # OutputSimulation { step = 0.50 } dump-%g.gfs
+    # OutputSimulation { step = 0.08 } snapshotVTK-%g.vtk { variables = T,U,V format = VTK}
+    # OutputSimulation { step = 0.5 } snapshotText-%g.txt {
+    #     format = text
+    # }
+
+#     OutputLocation { istep = 1 } { awk -f distance.awk > probe1 } gaugeLoc1 { interpolate = 0 }
+#     OutputLocation { istep = 1 } { awk -f distance.awk > probe2 } gaugeLoc2 { interpolate = 0 }
+#     OutputLocation { istep = 1 } { awk -f distance.awk > probe3 } gaugeLoc3 { interpolate = 0 }
+#     OutputLocation { istep = 1 } { awk -f distance.awk > probe4 } gaugeLoc4 { interpolate = 0 }
+#     OutputLocation { istep = 1 } { awk -f distance.awk > probe5 } gaugeLoc5 { interpolate = 0 }
+    # OutputLocation { step = 0.1 } slice-%g gaugeLoc # { interpolate = 0 }
+
+    GModule gfsview
+    # OutputView { step = TMOVIE } {
+    OutputView { istep = 15 } {
+	ppm2mpeg -s 1050x600 > depth.mpg
+    } { width = 1600 height = 400 } view2.gfv
+
+    # OutputDropletSums { istep = 1 } drops.txt  { v = T*dV   } T
+
+    # energy contents
+    # OutputScalarSum { istep = 1 } {
+	# awk '{
+    #       print $3,$5;
+    #       fflush (stdout);
+    #     }' > totalEnergy
+    # } { v = T*MUDRHO*((0.5*Velocity2)+(GRAVITYCOEFF*CHANNELCOS*y)) }
+# 
+    # OutputScalarSum { istep = 1 } {
+	# awk '{
+    #       print $3,$5;
+    #       fflush (stdout);
+    #     }' > kineticEnergy
+    # } { v = T*MUDRHO*(0.5*Velocity2) }
+# 
+    # OutputScalarSum { istep = 1 } {
+	# awk '{
+    #       print $3,$5;
+    #       fflush (stdout);
+    #     }' > potentialEnergy
+    # } { v = T*MUDRHO*(GRAVITYCOEFF*CHANNELCOS*y) }
+
+    OutputScalarNorm { istep = 20 } {
+    awk '{ print $3, $9; fflush (stdout); }' > amplitude
+  } { v = T*y }
+
+    OutputScalarNorm { istep = 20 } {
+    awk '{ print $3, $9; fflush (stdout); }' > frontPos
+  } { v = (K>Kmax*0.99) ? x : 0.0 }
+
+    OutputScalarNorm { istep = 20 } {
+    awk '{ print $3, $9; fflush (stdout); }' > frontVel
+  } { v = T*Velocity }
+	
+	EventBalance { istep = 20 } 0.10
+    OutputBalance { istep = 60 } balance
+}
+
+# box 1
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 2
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 3
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 4
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 5
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 6
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 7
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 8
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 9
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 10
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 11
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 12
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+# box 13
+GfsBox {
+    top = Boundary {
+	BcDirichlet P (-AIRRHO*GRAVITYCOEFF*CHANNELCOS*(LBOX-NORMALDEPTH))
+	# BcDirichlet P 0.0
+	BcNeumann V 0.0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+
+1 2 right
+2 3 right
+3 4 right
+4 5 right
+5 6 right
+6 7 right
+7 8 right
+8 9 right
+9 10 right
+10 11 right
+11 12 right
+12 13 right
+13 1 right
