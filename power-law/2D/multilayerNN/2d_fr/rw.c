@@ -143,8 +143,8 @@ event init (i = 0) {
       for (int l = 0; l < nl; l++) {
         z += layer[l]*h[]/2.;
         u = ul[l];
-        // u.x[] = hbProfile(z, totalDepth, maxTotalVel);
-        u.x[] = normalVel;
+        u.x[] = hbProfile(z, totalDepth, maxTotalVel);
+        // u.x[] = normalVel;
         u.y[] = 0.00;
         // TODO: close follow Gaussian test case
 //         ul.n[left] = t<=distPeriod/2.0 ? dirichlet(hbProfileBoundary(point, _s, z, distDepth)) : dirichlet(hbProfileBoundary(point, _s, z, normalDepth));
@@ -232,7 +232,7 @@ event adapt1 (i++) {
 //   refine(x>=(DOMAINLENGTH-9.9*DOMAINLENGTH/pow(2,MAXLEVEL)) && level<MAXLEVEL);
 }
 
-event hmax(i+=25)
+event hmax(i+=20)
 {
   //    double maxDepth = normalDepth;
      double maxDepthLocX = 0.0;
@@ -346,12 +346,16 @@ event output  (t = 0; t <= simTime; t+=outputInterval){
 }
 
 event moviemaker (t += 12) {
-  output_ppm (h, map = jet, linear = true,
-	      n = 400, file = "depth.mp4");
+  // output_ppm (h, map = jet, linear = true, n = 400, file = "depth.mp4");
   // map = radial, map = cool_warm
   // scalar l[];
   // foreach()
   //   l[] = level;
   // output_ppm (l, map = cool_warm, min = 4, max = LEVEL, n = 400,
 	 //      file = "level.mp4");
+
+  view (map = jet, fov = 45, width = 600, height = 600, samples = 1);
+  clear();
+  squares ("h", linear = true);
+  save ("h_animation.mp4");
 }
