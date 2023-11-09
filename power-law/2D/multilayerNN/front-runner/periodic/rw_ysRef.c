@@ -230,7 +230,7 @@ event hmax(i+=25)
                if ( h[]>h[1] && h[]>h[-1] && x>maxDepthLocX && h[]>(normalDepth*(1.0+0.50*disAmp))){
                     maxDepth = h[];
                     maxDepthLocX = x;
-                    maxDepthVel = u.x[];
+                    maxDepthVel = uAve[];
                }
      }
 	 foreach ()
