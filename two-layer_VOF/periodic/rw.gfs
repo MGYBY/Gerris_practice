@@ -7,18 +7,18 @@
 # normal depth and velocity for layer 1 (assigned as Phase 1 in this case: T1=1 && T2=1)
 Define HN1 1.0
 Define UN1 1.0
-Define tanTheta 0.06
+Define tanTheta 0.05
 Define cosTheta (pow(1.0/(tanTheta*tanTheta+1.0), 0.50))
 Define sinTheta (pow((1.0-pow(cosTheta,2.0)),0.50))
 Define LDOMAIN (4.50*HN1/tanTheta)
-Define NUMBOX 1
+Define NUMBOX 3
 Define LBOX (LDOMAIN/NUMBOX)
 
 # parameters for two-layer system
 Define hR 1.0
 Define muR 1.0
 Define rhoR 1.0
-Define FR1 2.0
+Define FR1 0.80
 Define Re1 (FR1*FR1/tanTheta/((2.0+3.0*hR*rhoR)/6.0))
 Define rhoMud 1.0
 Define muMud (1.0/Re1)
@@ -49,14 +49,15 @@ Define MAXLEVEL 12
 Define MINLEVEL 1
 
 # max run-time
-Define TMAX 300.0
+Define TMAX 400.0
 Define TOUTPUT 1.0
 Define TSNAP 5.0
-Define TFINAL 300.0
+Define TFINAL 400.0
 
 # mesh adaptivity parameters
 Define UEMAX 0.0499
-Define VOREMAX 0.075
+Define VORTMAX 0.1
+Define VORTMAXAIR (VORTMAX*36.0)
 Define TOPEXTENT (HN1*(1.0+hR)*3.20)
 
 Define HDIST(x,base,amp,wl) (base*(1.0+amp*sin(2.0*M_PI*(x+LBOX/2.0)/wl)))
@@ -217,19 +218,19 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     AdaptFunction { istep = 1 } {
 	cmax = 0
     cfactor = 2
-	maxlevel = (y<(5.520*LBOX/pow(2,MAXLEVEL))) ? MAXLEVEL : (MAXLEVEL-3)
+	maxlevel = (y<=(5.520*LBOX/pow(2,MAXLEVEL))) ? MAXLEVEL : (MINLEVEL+1)
     # minlevel = MINLEVEL
     } T1
 
     AdaptFunction { istep = 1 } {
-	cmax = VOREMAX
+	cmax = VORTMAX
     cfactor = 2
 	maxlevel = (y<TOPEXTENT) ? MAXLEVEL : (MINLEVEL+1)
     # minlevel = MINLEVEL
     } (T1*Vorticity)
 
     AdaptFunction { istep = 1 } {
-	cmax = (VOREMAX*8.50)
+	cmax = (VORTMAXAIR)
     cfactor = 2
 	maxlevel = (y<TOPEXTENT) ? MAXLEVEL : (MINLEVEL+1)
     # minlevel = MINLEVEL
@@ -256,15 +257,15 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     # don't know whether this would help. mass conservation problem?
     # RemoveDroplets { istep = 1 } T -3
 
-    OutputSimulation { step = 1.0 } snapshot-%g.gfs { variables = T1,T2,U,V }
-    OutputSimulation { step = 5.0 } dump-%g.gfs
+    OutputSimulation { step = 2.0 } snapshot-%g.gfs { variables = T1,T2,U,V }
+    OutputSimulation { step = 10.0 } dump-%g.gfs
 
     # probes
 #     OutputLocation { istep = 1 } { awk -f distance.awk > probe1 } gaugeLoc { interpolate = 0 }
     # OutputLocation { step = 0.1 } slice-%g gaugeLoc # { interpolate = 0 }
 
     GModule gfsview
-    OutputView { istep = 72 } {
+    OutputView { istep = 80 } {
 	ppm2mpeg -s 1120x420 > depth.mpg
     } { width = 1600 height = 600 } view1.gfv
 
@@ -306,4 +307,28 @@ GfsBox {
 	BcDirichlet U 0
     }
 }
-1 1 right
+GfsBox {
+    top = Boundary {
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
+	BcDirichlet P 0.0
+	BcNeumann V 0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+GfsBox {
+    top = Boundary {
+	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
+	BcDirichlet P 0.0
+	BcNeumann V 0
+    }
+    bottom = Boundary {
+	# no-slip at the bottom
+	BcDirichlet U 0
+    }
+}
+1 2 right
+2 3 right
+3 1 right
