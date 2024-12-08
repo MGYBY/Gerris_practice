@@ -156,6 +156,8 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     # VariableFiltered Tf T 3
     PhysicalParams { alpha = 1./set_density(Tf1, Tf2) }
     SourceViscosity set_vis (Tf1, Tf2)
+	# PhysicalParams { alpha = 1./set_density(T1, T2) }
+    # SourceViscosity set_vis (T1, T2)
     
     # note that if parallelism is used, sufficient partition should be used 
 #     Solid (cube(LDOMAIN/2.0, (2.50*(NORMALDEPTH)+0.5*LDOMAIN*2), 0.0, LDOMAIN*2))
@@ -219,6 +221,20 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     # minlevel = MINLEVEL
     } T1
 
+	AdaptFunction { istep = 1 } {
+	cmax = VOREMAX
+    cfactor = 2
+	maxlevel = (y<TOPEXTENT) ? MAXLEVEL : (MINLEVEL+1)
+    # minlevel = MINLEVEL
+    } (T1*Vorticity)
+
+    AdaptFunction { istep = 1 } {
+	cmax = (VOREMAX*8.50)
+    cfactor = 2
+	maxlevel = (y<TOPEXTENT) ? MAXLEVEL : (MINLEVEL+1)
+    # minlevel = MINLEVEL
+    } ((1.0-T1)*Vorticity)
+
     # AdaptError { istep = 1 } { cmax = 0.01 maxlevel = MAXLEVEL } U
     # AdaptError { istep = 1 } { cmax = 1e-2 maxlevel = max_level } V
 
@@ -226,8 +242,8 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     AdaptVorticity { istep = 1 } { cmax = VOREMAX maxlevel = (y<(TOPEXTENT*0.98) ? MAXLEVEL : (MINLEVEL+1)) minlevel = MINLEVEL}
 
     # gravity
-    Source V (-1.0)*(1.0/(FR1*FR1))*cosTheta
-    Source U (1.0/(FR1*FR1))*sinTheta*Tf1
+    Source V (-1.0)*(1.0/(FR1*FR1))
+    Source U (1.0/(FR1*FR1))*tanTheta*T1
 
     OutputTime { istep = 10 } stderr
     OutputProjectionStats { istep = 10 } stderr
