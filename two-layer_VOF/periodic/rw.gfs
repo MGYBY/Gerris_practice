@@ -7,18 +7,18 @@
 # normal depth and velocity for layer 1 (assigned as Phase 1 in this case: T1=1 && T2=1)
 Define HN1 1.0
 Define UN1 1.0
-Define tanTheta 0.05
+Define tanTheta 0.06
 Define cosTheta (pow(1.0/(tanTheta*tanTheta+1.0), 0.50))
 Define sinTheta (pow((1.0-pow(cosTheta,2.0)),0.50))
 Define LDOMAIN (4.50*HN1/tanTheta)
-Define NUMBOX 3
+Define NUMBOX 1
 Define LBOX (LDOMAIN/NUMBOX)
 
 # parameters for two-layer system
 Define hR 1.0
 Define muR 1.0
 Define rhoR 1.0
-Define FR1 0.80
+Define FR1 2.0
 Define Re1 (FR1*FR1/tanTheta/((2.0+3.0*hR*rhoR)/6.0))
 Define rhoMud 1.0
 Define muMud (1.0/Re1)
@@ -44,20 +44,20 @@ Define AMPII 0.125
 Define AMPVEL 0.00
 
 # Maximum refinement: guarantee more than 24 cell through normal depth
-Define MAXLEVEL 12
+Define MAXLEVEL 11
 # Define MINLEVEL 2
 Define MINLEVEL 1
 
 # max run-time
-Define TMAX 400.0
+# Define TMAX 400.0 # dummy
 Define TOUTPUT 1.0
 Define TSNAP 5.0
-Define TFINAL 400.0
+Define TFINAL 500.0
 
 # mesh adaptivity parameters
 Define UEMAX 0.0499
 Define VORTMAX 0.1
-Define VORTMAXAIR (VORTMAX*36.0)
+Define VORTMAXAIR (VORTMAX*28.0)
 Define TOPEXTENT (HN1*(1.0+hR)*3.20)
 
 Define HDIST(x,base,amp,wl) (base*(1.0+amp*sin(2.0*M_PI*(x+LBOX/2.0)/wl)))
@@ -83,7 +83,10 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
             return ((3.0*muR-3.0*rhoR-6.0*hR*rhoR+6.0*hR*muR*rhoR)/(term*muR)+yCoord*(6.0*rhoR+6.0*hR*rhoR)/(term*muR)-3.0*(yCoord*yCoord)*(rhoR/(term*muR)));
         }
         // air
-        else return 1.055*((3.0*muR-3.0*rhoR-6.0*hR*rhoR+6.0*hR*muR*rhoR)/(term*muR)+yCoord*(6.0*rhoR+6.0*hR*rhoR)/(term*muR)-3.0*(yCoord*yCoord)*(rhoR/(term*muR)));
+        else if (yCoord<=TOPEXTENT)
+        return 1.055*((3.0*muR-3.0*rhoR-6.0*hR*rhoR+6.0*hR*muR*rhoR)/(term*muR)+yCoord*(6.0*rhoR+6.0*hR*rhoR)/(term*muR)-3.0*(yCoord*yCoord)*(rhoR/(term*muR)));
+        else
+        return 0.0;
     }
 
     double hydroPressureDist(double xCoord, double yCoord) {
@@ -125,8 +128,8 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
 
     # We need to tune the solver
     # do not tune solver for now
-    ApproxProjectionParams { tolerance = 2.5e-4 nitermax = 200 nitermin = 1}
-    ProjectionParams { tolerance = 2.5e-4  nitermax = 200 nitermin = 1}
+    ApproxProjectionParams { tolerance = 5.e-4 nitermax = 200 nitermin = 1}
+    ProjectionParams { tolerance = 5.e-4  nitermax = 200 nitermin = 1}
 
     # VOF tracer and interface positions
     # VariableTracerVOF T
@@ -161,7 +164,7 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     SourceViscosity set_vis (T1, T2)
     
     # note that if parallelism is used, sufficient partition should be used 
-#     Solid (cube(LDOMAIN/2.0, (2.50*(NORMALDEPTH)+0.5*LDOMAIN*2), 0.0, LDOMAIN*2))
+#     Solid (cube(LDOMAIN/2.0, (TOPEXTENT), 0.0, LDOMAIN*2))
 #     RefineSolid MAXLEVEL
 #
 #     # more control on the top BC
@@ -258,7 +261,7 @@ NUMBOX NUMBOX GfsSimulation GfsBox GfsGEdge {
     # RemoveDroplets { istep = 1 } T -3
 
     OutputSimulation { step = 2.0 } snapshot-%g.gfs { variables = T1,T2,U,V }
-    OutputSimulation { step = 10.0 } dump-%g.gfs
+    OutputSimulation { step = 8.0 } dump-%g.gfs
 
     # probes
 #     OutputLocation { istep = 1 } { awk -f distance.awk > probe1 } gaugeLoc { interpolate = 0 }
@@ -307,28 +310,5 @@ GfsBox {
 	BcDirichlet U 0
     }
 }
-GfsBox {
-    top = Boundary {
-	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
-	BcDirichlet P 0.0
-	BcNeumann V 0
-    }
-    bottom = Boundary {
-	# no-slip at the bottom
-	BcDirichlet U 0
-    }
-}
-GfsBox {
-    top = Boundary {
-	# BcDirichlet P -AIRRHO*GRAVITYCOEFF*CHANNELCOS*LBOX
-	BcDirichlet P 0.0
-	BcNeumann V 0
-    }
-    bottom = Boundary {
-	# no-slip at the bottom
-	BcDirichlet U 0
-    }
-}
-1 2 right
-2 3 right
-3 1 right
+
+1 1 right
