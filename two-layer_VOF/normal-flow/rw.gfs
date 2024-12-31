@@ -1,0 +1,635 @@
+# Title: 2D VOF laminar sheet flow roll wave simulation
+#
+# Description:
+# Normal flow: H = 0.0018636m; U = 0.170357m/s; So=0.040.
+
+# Domain extent
+# normal depth and velocity for layer 1 (assigned as Phase 1 in this case: T1=1 && T2=1)
+Define HN1 1.0
+Define UN1 1.0
+Define tanTheta 0.06
+Define cosTheta (pow(1.0/(tanTheta*tanTheta+1.0), 0.50))
+Define sinTheta (pow((1.0-pow(cosTheta,2.0)),0.50))
+
+# parameters for two-layer system
+Define hR 1.0
+Define muR (2.0/0.7)
+Define rhoR (1.0/1.0)
+Define FR1 0.50
+Define Re1 (FR1*FR1/tanTheta/((2.0+3.0*hR*rhoR)/6.0))
+Define rhoMud 1.0
+Define muMud (1.0/Re1)
+
+# air-fluid ratios
+Define rhoRAF 89.50
+Define muRAF 48.50
+# properties of layer 2 (T1=1 && T2=0)
+Define rhoWater (rhoMud*rhoR)
+Define muWater (muMud*muR)
+# properties of air (T1=0)
+Define rhoAir (rhoWater/rhoRAF)
+Define muAir (muWater/muRAF)
+
+# Weber number defined based on air-fluid interface
+# TODO: need to be defined based on layer 2
+Define WE 150.0
+Define TENSION (muWater*pow(UN1,2.0)*HN1/WE)
+
+# disturbance parameters for the two layers
+Define AMPI 0.125
+Define AMPII 0.125
+Define AMPVEL 0.00
+
+Define NUMBOX 100
+Define LDOMAIN (HN1*(1.0+hR)*(NUMBOX/60.0))
+Define LBOX (LDOMAIN/NUMBOX)
+
+# Maximum refinement: guarantee more than 24 cell through normal depth
+Define MAXLEVEL 11
+# Define MINLEVEL 2
+Define MINLEVEL 1
+
+# max run-time
+# Define TMAX 400.0 # dummy
+Define TOUTPUT 1.0
+Define TSNAP 5.0
+Define TFINAL 500.0
+
+# mesh adaptivity parameters
+Define UEMAX 0.0499
+Define VORTMAX 0.1
+Define VORTMAXAIR (VORTMAX*28.0)
+Define TOPEXTENT (HN1*(1.0+hR)*3.20)
+
+Define HDIST(x,base,amp,wl) (base*(1.0+amp*sin(2.0*M_PI*(x+LBOX/2.0)/wl)))
+
+# Define INITLENGTH (LBOX/32.0)
+# 40 cells in air, 60 cells in fluids
+
+100 199 GfsSimulation GfsBox GfsGEdge {
+    # shift origin of the domain
+    x = 0.5 y = 0.5
+	# y = 0.5
+} {
+        Global {
+    // velocity distribution of steady-uniform flow
+    double velDist (double xCoord, double yCoord) {
+        double term, h1, h2;
+        term = 2.0+3.0*hR*rhoR;
+        h1 = HDIST(xCoord, HN1, AMPI, LDOMAIN);
+        h2 = HDIST(xCoord, HN1*hR, AMPI, LDOMAIN)+HDIST(xCoord, (HN1*hR), AMPII, LDOMAIN);
+        if (yCoord<=h1) {
+            // layer 1
+            return ((3.0*yCoord*(2.0+2.0*hR*rhoR))/term-3.0*(yCoord*yCoord)/term);
+        }
+        else if (yCoord>h1 && yCoord<=h2) {
+            // layer 2
+            return ((3.0*muR-3.0*rhoR-6.0*hR*rhoR+6.0*hR*muR*rhoR)/(term*muR)+yCoord*(6.0*rhoR+6.0*hR*rhoR)/(term*muR)-3.0*(yCoord*yCoord)*(rhoR/(term*muR)));
+        }
+        // air
+        else if (yCoord<=TOPEXTENT)
+        return 1.055*((3.0*muR-3.0*rhoR-6.0*hR*rhoR+6.0*hR*muR*rhoR)/(term*muR)+yCoord*(6.0*rhoR+6.0*hR*rhoR)/(term*muR)-3.0*(yCoord*yCoord)*(rhoR/(term*muR)));
+        else
+        return 0.0;
+    }
+
+    double hydroPressureDist(double xCoord, double yCoord) {
+        double gRed;
+        double term, h1, h2;
+        gRed = 1.0/(FR1*FR1);
+        h1 = HDIST(xCoord, HN1, AMPI, LDOMAIN);
+        h2 = HDIST(xCoord, HN1*hR, AMPI, LDOMAIN)+HDIST(xCoord, (HN1*hR), AMPII, LDOMAIN);
+        if (yCoord<=h1)
+            return (rhoMud*gRed*(h1-yCoord)+rhoWater*gRed*(h2-h1));
+        else if(yCoord>h1 && yCoord<=h2)
+            return (rhoWater*gRed*(h2-yCoord));
+        else
+            return (0.0-rhoAir*gRed*(yCoord-h2));
+    }
+
+	double var (double Tf1, double Tf2, double var1, double var2, double var3) {
+	// assume filtered by default
+    return (CLAMP(Tf1*Tf2, 0., 1.) * var1 + CLAMP(Tf1*(1.0-Tf2), 0., 1.) * var2 + CLAMP((1-Tf1), 0., 1.) * var3);
+	}
+
+	double set_density (double Tf1, double Tf2) {
+	    return var(Tf1, Tf2, rhoMud, rhoWater, rhoAir);
+    }
+
+    double set_vis (double Tf1, double Tf2) {
+        return var(Tf1, Tf2, muMud, muWater, muAir);
+    }
+    }
+
+    PhysicalParams { L = LBOX }
+
+    Time { end = TFINAL dtmax = 3e-2 }
+
+    # Enhance convergence with Hypre, tuned parameters. More levels are preferred.
+#     GModule hypre { verbose = 0 coarsening_type = hmis  nlevel = 13}
+
+    AdvectionParams { cfl = 0.475 }
+
+    # We need to tune the solver
+    # do not tune solver for now
+    ApproxProjectionParams { tolerance = 5.e-4 nitermax = 200 nitermin = 1}
+    ProjectionParams { tolerance = 5.e-4  nitermax = 200 nitermin = 1}
+
+    # VOF tracer and interface positions
+    # VariableTracerVOF T
+    # a more consistent VOF method
+#     VariableTracerVOFHeight T1
+#     VariableTracerVOFHeight T2
+    VariableTracerVOF T1
+    VariableTracerVOF T2
+
+    # passive scalar transport
+#     VariableTracerVOF Ti
+#     InitFraction Ti ({
+# 	    double top = TRACERTOPYCOORD - y;
+# 	    double bottom = y - TRACERBOTTOMYCOORD;
+# 	    return union (top, bottom);
+#     })
+
+#     VariablePosition X T1 x1
+#     VariablePosition Y T1 y1
+#     VariablePosition X T2 x2
+#     VariablePosition Y T2 y2
+
+    # note that the filter would greatly improve convergence for large density and viscosity ratio
+    # Basilisk code use 2 times filter by default
+    # VariableFiltered Tf T 1
+#     VariableFiltered Tf1 T1 1
+    # VariableFiltered Tf2 T2 1
+    # VariableFiltered Tf T 3
+    # PhysicalParams { alpha = 1./set_density(Tf1, Tf2) }
+    PhysicalParams { alpha = 1./set_density(T1, T2) }
+    # SourceViscosity set_vis (Tf1, Tf2)
+    SourceViscosity set_vis (T1, T2)
+
+    # note that if parallelism is used, sufficient partition should be used
+#     Solid (cube(LDOMAIN/2.0, (TOPEXTENT), 0.0, LDOMAIN*2))
+#     RefineSolid MAXLEVEL
+#
+#     # more control on the top BC
+#     SurfaceBc P Dirichlet (-1.0*AIRRHO*CHANNELCOS*GRAVITYCOEFF*(2.36-1.0)*NORMALDEPTH)
+#     SurfaceBc U Neumann 0.0
+#     SurfaceBc V Neumann 0.0
+#     SurfaceBc T Neumann 0.0
+#     SurfaceBc Ti Neumann 0.0
+
+    # BAsed on unfiltered
+#     VariableCurvature K1 T1
+#     VariableCurvature K2 T2
+#     SourceTension T1 TENSION K1
+#     SourceTension T2 TENSION K2
+
+    # initial conditions
+#     Refine ((y>0.0)&&(y<1.40*HN1*(1.0+hR)) ? MAXLEVEL : (MAXLEVEL-5))
+    InitFraction T1 ((HDIST(x,HN1,AMPI,LDOMAIN)+HDIST(x,HN1*hR,AMPII,LDOMAIN))-y)
+    InitFraction T2 (HDIST(x,HN1,AMPI,LDOMAIN)-y)
+
+    Init {} {
+        # Initial normal flow
+	U = 0.0
+    V = 0.0
+    P = hydroPressureDist(x,y)
+    }
+
+    # AdaptError { istep = 1 } { cmax = 0.01 maxlevel = MAXLEVEL } U
+    # AdaptError { istep = 1 } { cmax = 1e-2 maxlevel = max_level } V
+
+    # helpful for wave front resolution
+    # TODO: vort adapt based on fluid phase
+#     AdaptVorticity { istep = 1 } { cmax = VOREMAX maxlevel = (y<(TOPEXTENT*0.98) ? MAXLEVEL : (MINLEVEL+1)) minlevel = MINLEVEL}
+
+    # gravity
+    Source V (-1.0)*(1.0/(FR1*FR1))
+#     Source U (1.0/(FR1*FR1))*sinTheta*Tf1
+    Source U (1.0/(FR1*FR1))*tanTheta*T1
+
+    OutputTime { istep = 10 } stderr
+    OutputProjectionStats { istep = 10 } stderr
+    OutputDiffusionStats { istep = 10 } stderr
+    OutputTime { istep = 10 } ./time-stats.txt
+
+    # remove ejected droplets (just in case)
+    # don't know whether this would help. mass conservation problem?
+    # RemoveDroplets { istep = 1 } T -3
+
+    OutputSimulation { step = 5.0 } snapshot-%g.gfs { variables = T1,T2,U,V }
+
+    OutputSimulation { step = 5.0 } snapshotText-%g.txt {
+        variables = T1,T2,U,V
+        format = text
+    }
+
+    OutputLocation { step = 5.0 } centerSlice-%g centerlineGaugeLoc
+}
+
+
+GfsBox {
+bottom = Boundary {
+    BcDirichlet U 0
+}
+}
+# 1th box above
+GfsBox { }
+# 2th box above
+GfsBox { }
+# 3th box above
+GfsBox { }
+# 4th box above
+GfsBox { }
+# 5th box above
+GfsBox { }
+# 6th box above
+GfsBox { }
+# 7th box above
+GfsBox { }
+# 8th box above
+GfsBox { }
+# 9th box above
+GfsBox { }
+# 10th box above
+GfsBox { }
+# 11th box above
+GfsBox { }
+# 12th box above
+GfsBox { }
+# 13th box above
+GfsBox { }
+# 14th box above
+GfsBox { }
+# 15th box above
+GfsBox { }
+# 16th box above
+GfsBox { }
+# 17th box above
+GfsBox { }
+# 18th box above
+GfsBox { }
+# 19th box above
+GfsBox { }
+# 20th box above
+GfsBox { }
+# 21th box above
+GfsBox { }
+# 22th box above
+GfsBox { }
+# 23th box above
+GfsBox { }
+# 24th box above
+GfsBox { }
+# 25th box above
+GfsBox { }
+# 26th box above
+GfsBox { }
+# 27th box above
+GfsBox { }
+# 28th box above
+GfsBox { }
+# 29th box above
+GfsBox { }
+# 30th box above
+GfsBox { }
+# 31th box above
+GfsBox { }
+# 32th box above
+GfsBox { }
+# 33th box above
+GfsBox { }
+# 34th box above
+GfsBox { }
+# 35th box above
+GfsBox { }
+# 36th box above
+GfsBox { }
+# 37th box above
+GfsBox { }
+# 38th box above
+GfsBox { }
+# 39th box above
+GfsBox { }
+# 40th box above
+GfsBox { }
+# 41th box above
+GfsBox { }
+# 42th box above
+GfsBox { }
+# 43th box above
+GfsBox { }
+# 44th box above
+GfsBox { }
+# 45th box above
+GfsBox { }
+# 46th box above
+GfsBox { }
+# 47th box above
+GfsBox { }
+# 48th box above
+GfsBox { }
+# 49th box above
+GfsBox { }
+# 50th box above
+GfsBox { }
+# 51th box above
+GfsBox { }
+# 52th box above
+GfsBox { }
+# 53th box above
+GfsBox { }
+# 54th box above
+GfsBox { }
+# 55th box above
+GfsBox { }
+# 56th box above
+GfsBox { }
+# 57th box above
+GfsBox { }
+# 58th box above
+GfsBox { }
+# 59th box above
+GfsBox { }
+# 60th box above
+GfsBox { }
+# 61th box above
+GfsBox { }
+# 62th box above
+GfsBox { }
+# 63th box above
+GfsBox { }
+# 64th box above
+GfsBox { }
+# 65th box above
+GfsBox { }
+# 66th box above
+GfsBox { }
+# 67th box above
+GfsBox { }
+# 68th box above
+GfsBox { }
+# 69th box above
+GfsBox { }
+# 70th box above
+GfsBox { }
+# 71th box above
+GfsBox { }
+# 72th box above
+GfsBox { }
+# 73th box above
+GfsBox { }
+# 74th box above
+GfsBox { }
+# 75th box above
+GfsBox { }
+# 76th box above
+GfsBox { }
+# 77th box above
+GfsBox { }
+# 78th box above
+GfsBox { }
+# 79th box above
+GfsBox { }
+# 80th box above
+GfsBox { }
+# 81th box above
+GfsBox { }
+# 82th box above
+GfsBox { }
+# 83th box above
+GfsBox { }
+# 84th box above
+GfsBox { }
+# 85th box above
+GfsBox { }
+# 86th box above
+GfsBox { }
+# 87th box above
+GfsBox { }
+# 88th box above
+GfsBox { }
+# 89th box above
+GfsBox { }
+# 90th box above
+GfsBox { }
+# 91th box above
+GfsBox { }
+# 92th box above
+GfsBox { }
+# 93th box above
+GfsBox { }
+# 94th box above
+GfsBox { }
+# 95th box above
+GfsBox { }
+# 96th box above
+GfsBox { }
+# 97th box above
+GfsBox { }
+# 98th box above
+GfsBox { }
+# 99th box above
+GfsBox {
+    top = Boundary
+}
+# last box above
+1 1 right
+2 2 right
+3 3 right
+4 4 right
+5 5 right
+6 6 right
+7 7 right
+8 8 right
+9 9 right
+10 10 right
+11 11 right
+12 12 right
+13 13 right
+14 14 right
+15 15 right
+16 16 right
+17 17 right
+18 18 right
+19 19 right
+20 20 right
+21 21 right
+22 22 right
+23 23 right
+24 24 right
+25 25 right
+26 26 right
+27 27 right
+28 28 right
+29 29 right
+30 30 right
+31 31 right
+32 32 right
+33 33 right
+34 34 right
+35 35 right
+36 36 right
+37 37 right
+38 38 right
+39 39 right
+40 40 right
+41 41 right
+42 42 right
+43 43 right
+44 44 right
+45 45 right
+46 46 right
+47 47 right
+48 48 right
+49 49 right
+50 50 right
+51 51 right
+52 52 right
+53 53 right
+54 54 right
+55 55 right
+56 56 right
+57 57 right
+58 58 right
+59 59 right
+60 60 right
+61 61 right
+62 62 right
+63 63 right
+64 64 right
+65 65 right
+66 66 right
+67 67 right
+68 68 right
+69 69 right
+70 70 right
+71 71 right
+72 72 right
+73 73 right
+74 74 right
+75 75 right
+76 76 right
+77 77 right
+78 78 right
+79 79 right
+80 80 right
+81 81 right
+82 82 right
+83 83 right
+84 84 right
+85 85 right
+86 86 right
+87 87 right
+88 88 right
+89 89 right
+90 90 right
+91 91 right
+92 92 right
+93 93 right
+94 94 right
+95 95 right
+96 96 right
+97 97 right
+98 98 right
+99 99 right
+100 100 right
+1 2 top
+2 3 top
+3 4 top
+4 5 top
+5 6 top
+6 7 top
+7 8 top
+8 9 top
+9 10 top
+10 11 top
+11 12 top
+12 13 top
+13 14 top
+14 15 top
+15 16 top
+16 17 top
+17 18 top
+18 19 top
+19 20 top
+20 21 top
+21 22 top
+22 23 top
+23 24 top
+24 25 top
+25 26 top
+26 27 top
+27 28 top
+28 29 top
+29 30 top
+30 31 top
+31 32 top
+32 33 top
+33 34 top
+34 35 top
+35 36 top
+36 37 top
+37 38 top
+38 39 top
+39 40 top
+40 41 top
+41 42 top
+42 43 top
+43 44 top
+44 45 top
+45 46 top
+46 47 top
+47 48 top
+48 49 top
+49 50 top
+50 51 top
+51 52 top
+52 53 top
+53 54 top
+54 55 top
+55 56 top
+56 57 top
+57 58 top
+58 59 top
+59 60 top
+60 61 top
+61 62 top
+62 63 top
+63 64 top
+64 65 top
+65 66 top
+66 67 top
+67 68 top
+68 69 top
+69 70 top
+70 71 top
+71 72 top
+72 73 top
+73 74 top
+74 75 top
+75 76 top
+76 77 top
+77 78 top
+78 79 top
+79 80 top
+80 81 top
+81 82 top
+82 83 top
+83 84 top
+84 85 top
+85 86 top
+86 87 top
+87 88 top
+88 89 top
+89 90 top
+90 91 top
+91 92 top
+92 93 top
+93 94 top
+94 95 top
+95 96 top
+96 97 top
+97 98 top
+98 99 top
+99 100 top
