@@ -14,7 +14,7 @@ C-syntax is good enough. Follow these threads:
 
 *https://unix.stackexchange.com/questions/137989/how-to-change-default-syntax-highlighting-for-header-file-in-kate*
 
-*https://gitlab.com/-/snippets/4499*
+*https://gitlab.com/-/snippets/4499* -- /usr/share/katepart5/syntax/
 
 3. Possible error in some distros:
 ```
